@@ -29,4 +29,10 @@
         +--------------------------+                 |
         |  Amazon RDS (PostgreSQL) | <------ Save URL to DB     
         +--------------------------+
+
+
+  +---------------------+  +-----------------+  +-------------------+
+  | AWS Secrets Manager |  | IAM Role (IRSA) |  | Amazon ECR (Repo) |
+  +---------------------+  +-----------------+  +-------------------+
+               Pods assume role to pull secrets & images
 ```
