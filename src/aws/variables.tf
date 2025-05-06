@@ -31,6 +31,9 @@ variable "k8s_namespace" {
 variable "k8s_service_account_name" {
   type = string
 }
+variable "repository_list" {
+  type = list(string)
+}
 # variable "bukect_backend" {
 #   type = string
 # }
