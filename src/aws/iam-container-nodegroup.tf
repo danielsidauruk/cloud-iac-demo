@@ -35,11 +35,11 @@ resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
 
 # ECR
 resource "aws_iam_role_policy_attachment" "eks_ecr_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.container_node_group.name
 }
 
-# Cloudwatch
+# CloudWatch
 resource "aws_iam_role_policy_attachment" "cloudwatch" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
   role       = aws_iam_role.container_node_group.name

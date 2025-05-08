@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "console_access" {
 
 resource "aws_iam_policy" "console_access" {
   name        = "${var.application_name}-${var.environment_name}-console-access"
-  description = "Allow users to assume the role to access EKSfrom the console"
+  description = "Allow users to assume the role to access EKS from the console"
   policy      = data.aws_iam_policy_document.console_access.json
 }
 
@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "console_access_assume_role_policy" {
   }
 }
 
-# resource "aws_iam_role" "console_access" {
-#   name               = "${var.application_name}-${var.environment_name}-console-access"
-#   assume_role_policy = data.aws_iam_policy_document.console_access_assume_role_policy.json
-# }
+resource "aws_iam_role" "console_access" {
+  name               = "${var.application_name}-${var.environment_name}-console-access"
+  assume_role_policy = data.aws_iam_policy_document.console_access_assume_role_policy.json
+}

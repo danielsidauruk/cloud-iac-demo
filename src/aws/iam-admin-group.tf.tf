@@ -13,8 +13,8 @@ resource "aws_iam_group_policy_attachment" "console_access" {
   policy_arn = aws_iam_policy.console_access.arn
 }
 
-# resource "aws_iam_user_policy_attachment" "console_access" {
-#   for_each   = { for idx, user in var.admin_users : user => user }
-#   user       = each.key
-#   policy_arn = aws_iam_policy.console_access.arn
-# }
+resource "aws_iam_user_policy_attachment" "console_access" {
+  for_each   = { for idx, user in var.admin_users : user => user }
+  user       = each.key
+  policy_arn = aws_iam_policy.console_access.arn
+}
