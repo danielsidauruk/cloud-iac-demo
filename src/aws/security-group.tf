@@ -1,5 +1,6 @@
 resource "aws_security_group" "cluster" {
   name   = "${var.application_name}-${var.environment_name}-cluster"
+  description = "Allow access to Cluster"
   vpc_id = aws_vpc.main.id
 
   egress {
@@ -9,6 +10,7 @@ resource "aws_security_group" "cluster" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
 }
 
 resource "aws_security_group_rule" "cluster_ingress_https" {
@@ -48,8 +50,9 @@ resource "aws_security_group_rule" "nodeport_cluster_udp" {
 }
 
 resource "aws_security_group" "cluster_nodes" {
-  name   = "${var.application_name}-${var.environment_name}-cluster-nodes"
-  vpc_id = aws_vpc.main.id
+  name        = "${var.application_name}-${var.environment_name}-cluster-nodes"
+  description = "Allow access to Cluster Nodes" #  -> test tanpa description
+  vpc_id      = aws_vpc.main.id
 
   egress {
     from_port = 0

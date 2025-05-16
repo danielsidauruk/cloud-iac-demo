@@ -8,7 +8,7 @@ data "aws_iam_policy_document" "alb_assume_role" {
     }
 
     actions = ["sts:AssumeRole"]
-  } 
+  }
 }
 
 resource "aws_iam_role" "alb_controller" {

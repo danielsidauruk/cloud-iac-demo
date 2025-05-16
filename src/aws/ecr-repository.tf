@@ -10,4 +10,5 @@ resource "aws_ecr_repository" "main" {
     application = var.application_name
     environment = var.environment_name
   }
+
 }

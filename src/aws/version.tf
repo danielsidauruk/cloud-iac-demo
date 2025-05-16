@@ -12,7 +12,7 @@ terraform {
   backend "s3" {
     bucket  = "openmusicapi-infra-tfstate"
     region  = "ap-southeast-3"
-    key     = "openmusicapi-portal-dev"
+    key     = "openmusicapi-infra-state"
     encrypt = true
   }
 }

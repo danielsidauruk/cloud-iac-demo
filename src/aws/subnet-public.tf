@@ -1,4 +1,5 @@
 resource "aws_subnet" "public" {
+
   for_each = local.public_subnets
 
   vpc_id                  = aws_vpc.main.id
