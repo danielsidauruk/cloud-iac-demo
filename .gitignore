@@ -9,6 +9,7 @@
 **/.debug.sh
 **/.debug.tfvars
 **/.DS_Store
+errored.tfstate
 
 # Crash log files
 crash.log
