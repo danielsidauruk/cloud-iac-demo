@@ -8,7 +8,7 @@ variable "primary_region" {
   type = string
 }
 variable "ecr_image_pushers" {
-  type = list(string)
+  type = string
 }
 variable "vpc_cidr_block" {
   type = string
@@ -33,4 +33,15 @@ variable "k8s_service_account_name" {
 }
 variable "repository_list" {
   type = list(string)
+}
+
+# RDS PostgresSQL variables
+variable "postgres_username" {
+  type    = string
+  default = "postgres"
+}
+
+variable "postgres_dbname" {
+  type    = string
+  default = "value"
 }
