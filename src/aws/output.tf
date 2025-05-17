@@ -1,3 +1,3 @@
-output "aws_iam_policy_document" {
-  value = data.aws_iam_policy_document.ecr_image_pusher.json
+output "redis_endpoint" {
+  value = aws_elasticache_cluster.redis.cache_nodes[0].address
 }

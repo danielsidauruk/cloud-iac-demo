@@ -43,5 +43,5 @@ variable "postgres_username" {
 
 variable "postgres_dbname" {
   type    = string
-  default = "value"
+  default = "openmusicapidb"
 }
