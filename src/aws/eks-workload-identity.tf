@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
     effect  = "Allow"
 
     condition {
-      test     = "StringEquals"
+      test = "StringEquals"
       // example output of varibale: oidc.eks.ap-southeast-3.amazonaws.com/id/1234567890ABCDEFEXAMPLE:sub
       variable = "${replace(aws_iam_openid_connect_provider.container_cluster_oidc.url, "https://", "")}:sub"
       values   = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
@@ -37,7 +37,6 @@ resource "aws_iam_role" "workload_identity" {
 data "aws_iam_policy_document" "workload_identity_policy" {
   statement {
     effect = "Allow"
-
     actions = [
       "secretsmanager:GetSecretValue",
       "secretsmanager:DescribeSecret",
@@ -45,6 +44,17 @@ data "aws_iam_policy_document" "workload_identity_policy" {
 
     resources = [
       "arn:aws:secretsmanager:${var.primary_region}:${data.aws_caller_identity.current.account_id}:secret:*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:*"
+    ]
+
+    resources = [
+      "arn:aws:s3:::${aws_s3_bucket.private_bucket.bucket}/*"
     ]
   }
 }
