@@ -29,30 +29,22 @@ data "aws_iam_policy_document" "console_access" {
 resource "aws_iam_policy" "console_access" {
 
   name        = "${var.application_name}-${var.environment_name}-console-access"
-  description = "Allow users to assume the role to access EKS from the console"
+  description = "Allow users to access EKS from the console"
   policy      = data.aws_iam_policy_document.console_access.json
 
 }
 
-data "aws_iam_policy_document" "console_access_assume_role_policy" {
-  version = "2012-10-17"
-
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = ["*"] # Allow all users
-    }
-    actions = ["sts:AssumeRole"]
-  }
+resource "aws_iam_group" "admin" {
+  name = "${var.application_name}-${var.environment_name}-admin"
 }
 
-resource "aws_iam_role" "console_access" {
-  name               = "${var.application_name}-${var.environment_name}-console-access"
-  assume_role_policy = data.aws_iam_policy_document.console_access_assume_role_policy.json
+resource "aws_iam_group_membership" "admin" {
+  name  = "${var.application_name}-${var.environment_name}-admin"
+  users = var.admin_users
+  group = aws_iam_group.admin.name
 }
 
-# resource "aws_iam_role" "console_access" {
-#   name               = "${var.application_name}-${var.environment_name}-console-access"
-#   assume_role_policy = data.aws_iam_policy_document.console_access_assume_role_policy.json
-# }
+resource "aws_iam_group_policy_attachment" "console_access" {
+  group      = aws_iam_group.admin.name
+  policy_arn = aws_iam_policy.console_access.arn
+}

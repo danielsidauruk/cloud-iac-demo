@@ -16,7 +16,6 @@ resource "aws_s3_bucket_ownership_controls" "private_bucket" {
   }
 }
 
-
 resource "aws_s3_bucket_public_access_block" "private_bucket_block" {
   bucket = aws_s3_bucket.private_bucket.id
 
@@ -25,40 +24,3 @@ resource "aws_s3_bucket_public_access_block" "private_bucket_block" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
-
-
-# data "aws_vpc_endpoint" "s3" {
-#   vpc_id = aws_vpc.main.id
-#   filter {
-#     name   = "service-name"
-#     values = ["com.amazonaws.${var.primary_region}.s3"]
-#   }
-
-#   depends_on = [aws_vpc_endpoint.s3]
-# }
-
-# resource "aws_s3_bucket_policy" "restrict_to_vpc_endpoint" {
-#   bucket = aws_s3_bucket.private_bucket.id
-
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Sid       = "AllowAccessFromVPCE",
-#         Effect    = "Deny"
-#         # Principal = "*",
-#         Action    = "s3:*",
-#         Resource = [
-#           "arn:aws:s3:::${aws_s3_bucket.private_bucket.bucket}",
-#           "arn:aws:s3:::${aws_s3_bucket.private_bucket.bucket}/*"
-#         ],
-#         Condition = {
-#           StringEquals = {
-#             "aws:sourceVpce" = aws_vpc_endpoint.s3.id
-#           }
-#         }
-#       }
-#     ]
-#   })
-# }
-

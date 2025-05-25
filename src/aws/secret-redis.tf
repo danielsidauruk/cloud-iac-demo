@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "redis_endpoint" {
-  name        = "${var.application_name}-${var.environment_name}-redis-endpoint-test1"
+  name        = "${var.application_name}-${var.environment_name}-redis-endpoint"
   description = "Redis Endpoint"
 }
 
