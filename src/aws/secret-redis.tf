@@ -1,6 +1,7 @@
 resource "aws_secretsmanager_secret" "redis_endpoint" {
-  name        = "${var.application_name}-${var.environment_name}-redis-endpoint"
-  description = "Redis Endpoint"
+  name                    = "${var.application_name}-${var.environment_name}-redis-endpoint-test16"
+  description             = "Redis Endpoint"
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "redis_endpoint_value" {
