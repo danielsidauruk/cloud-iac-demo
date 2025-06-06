@@ -1,11 +1,6 @@
-
-locals {
-  web_api_name = "${var.application_name}-api"
-}
-
-resource "kubernetes_deployment" "web_api" {
+resource "kubernetes_deployment" "api" {
   metadata {
-    name      = local.web_api_name
+    name      = var.application_name
     namespace = var.k8s_namespace
   }
 
@@ -14,14 +9,14 @@ resource "kubernetes_deployment" "web_api" {
 
     selector {
       match_labels = {
-        app = local.web_api_name
+        app = var.application_name
       }
     }
 
     template {
       metadata {
         labels = {
-          app = local.web_api_name
+          app = var.application_name
         }
       }
 
@@ -42,10 +37,10 @@ resource "kubernetes_deployment" "web_api" {
         container {
           # image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.primary_region}.amazonaws.com/${var.web_api_image.name}:${var.web_api_image.version}"
           image = "nginx"
-          name  = local.web_api_name
+          name  = var.application_name
 
           port {
-            container_port = 5000
+            container_port = 80
           }
 
           volume_mount {
@@ -59,16 +54,7 @@ resource "kubernetes_deployment" "web_api" {
             value_from {
               secret_key_ref {
                 name = "${var.application_name}-${var.environment_name}-rds-connection-secret"
-                key = "database_connection_string"
-              }
-            }
-          }
-                    env {
-            name = "CEK OMBAK"
-            value_from {
-              secret_key_ref {
-                name = "${var.application_name}-${var.environment_name}-rds-connection-secret"
-                key = "Avamys Fluticasone"
+                key  = "database_connection_string"
               }
             }
           }
@@ -77,7 +63,7 @@ resource "kubernetes_deployment" "web_api" {
             value_from {
               secret_key_ref {
                 name = "${var.application_name}-${var.environment_name}-redis-endpoint-secret"
-                key = "redis_endpoint"
+                key  = "redis_endpoint"
               }
             }
           }
@@ -87,15 +73,15 @@ resource "kubernetes_deployment" "web_api" {
   }
 
   timeouts {
-    create = "15m"
-    update = "15m"
+    create = "3m"
+    update = "3m"
     delete = "5m"
   }
 }
 
-resource "kubernetes_service" "web_api" {
+resource "kubernetes_service" "api" {
   metadata {
-    name      = "${local.web_api_name}-service"
+    name      = "${var.application_name}-service"
     namespace = var.k8s_namespace
 
   }
@@ -103,10 +89,10 @@ resource "kubernetes_service" "web_api" {
     type = "ClusterIP"
     port {
       port        = 80
-      target_port = 5000
+      target_port = 80
     }
     selector = {
-      app = local.web_api_name
+      app = var.application_name
     }
   }
 }

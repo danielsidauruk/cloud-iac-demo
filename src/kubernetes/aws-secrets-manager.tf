@@ -36,12 +36,12 @@ resource "kubernetes_manifest" "secret_provider_class" {
       parameters = {
         objects = yamlencode([
           {
-            objectName         = "${var.application_name}-${var.environment_name}-connection-string-test-16"
+            objectName         = "${var.application_name}-${var.environment_name}-connection-string-test-24"
             objectType         = "secretsmanager"
             objectVersionLabel = "AWSCURRENT"
           },
           {
-            objectName         = "${var.application_name}-${var.environment_name}-redis-endpoint-test16"
+            objectName         = "${var.application_name}-${var.environment_name}-redis-endpoint-test-24"
             objectType         = "secretsmanager"
             objectVersionLabel = "AWSCURRENT"
           }
@@ -54,11 +54,7 @@ resource "kubernetes_manifest" "secret_provider_class" {
           data = [
             {
               key        = "database_connection_string"
-              objectName = "${var.application_name}-${var.environment_name}-connection-string-test-16"
-            },
-            {
-              key        = "Avamys Fluticasone"
-              objectName = "awokaowk_test_doang_kok"
+              objectName = "${var.application_name}-${var.environment_name}-connection-string-test-24"
             }
           ]
         },
@@ -68,11 +64,17 @@ resource "kubernetes_manifest" "secret_provider_class" {
           data = [
             {
               key        = "redis_endpoint"
-              objectName = "${var.application_name}-${var.environment_name}-redis-endpoint-test16"
+              objectName = "${var.application_name}-${var.environment_name}-redis-endpoint-test-24"
             }
           ]
         }
       ]
     }
   }
+
+  depends_on = [
+    helm_release.csi_secrets_store,
+    helm_release.aws_secrets_provider
+  ]
+
 }

@@ -10,19 +10,6 @@ resource "kubernetes_ingress_v1" "ingress" {
     rule {
       http {
         path {
-          path      = "/"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = kubernetes_service.web_app.metadata[0].name
-              port {
-                number = 80
-              }
-            }
-          }
-        }
-        path {
           path      = "/api"
           path_type = "Prefix"
 
@@ -40,8 +27,6 @@ resource "kubernetes_ingress_v1" "ingress" {
   }
 
   depends_on = [
-    kubernetes_service.web_app,
-    /*kubernetes_service.web_api,*/
-    helm_release.ingress
+    helm_release.ingress_nginx
   ]
 }
