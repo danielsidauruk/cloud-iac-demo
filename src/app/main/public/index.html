@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple App</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #282c34; color: #abb2bf; }
+        .container { max-width: 800px; margin: auto; padding: 20px; border-radius: 8px; background-color: #3e4451; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        h1 { color: #61afef; text-align: center; margin-bottom: 30px; }
+
+        .section-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #4b5263;
+        }
+        .section-title {
+            color: #e5c07b;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .controls-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            color: #282c34;
+            background-color: #98c379;
+        }
+        button:hover { background-color: #7d9e62; }
+
+        pre {
+            background-color: #1c1f24;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #e06c75;
+        }
+        .result-container {
+            margin-top: 20px;
+            border-top: 1px solid #4b5263;
+            padding-top: 20px;
+        }
+        .success { color: #98c379; }
+        .error { color: #e06c75; }
+
+        input[type="text"] {
+            background-color: #1c1f24;
+            border: 1px solid #4b5263;
+            color: #abb2bf;
+            padding: 8px;
+            border-radius: 5px;
+            flex-grow: 1;
+            min-width: 250px;
+        }
+
+        .custom-file-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .custom-file-input-group input[type="file"] {
+            display: none;
+        }
+        .custom-file-input-group label {
+            background-color: #4b5263;
+            color: #abb2bf;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+        .custom-file-input-group label:hover {
+            background-color: #5c6370;
+        }
+        .custom-file-input-group span {
+            background-color: #1c1f24;
+            border: 1px solid #4b5263;
+            color: #abb2bf;
+            padding: 8px 12px;
+            border-radius: 5px;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 150px;
+        }
+        #s3UploadStatus {
+            margin-top: 10px;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple App</h1>
+
+        <div class="section-container">
+            <h2 class="section-title">Test Connect RDS & ElastiCache:</h2>
+            <div class="controls-group">
+                <button id="dbTest">RDS PostgreSQL</button>
+                <button id="redisTest">ElastiCache Redis</button>
+            </div>
+        </div>
+
+        <div class="section-container">
+            <h2 class="section-title">Test to Publish Message AmazonMQ RabbitMQ:</h2>
+            <div class="controls-group">
+                <input type="text" id="mqMessageInput" placeholder="Enter message text here"/>
+                <button id="mqPublishCustom">Publish</button>
+            </div>
+        </div>
+
+        <div class="section-container">
+            <h2 class="section-title">Test to Connect S3:</h2>
+            <div class="controls-group">
+                <div class="custom-file-input-group">
+                    <label for="s3FileInput">Choose File</label>
+                    <input type="file" id="s3FileInput"/>
+                    <span id="s3FileNameDisplay">No file chosen</span>
+                </div>
+                <button id="s3UploadButton">Upload File to S3</button>
+                <button id="s3Test">Test S3 (List Objects)</button>
+            </div>
+            <div id="s3UploadStatus"></div>
+        </div>
+
+        <div class="result-container">
+            <h2 class="section-title">Test Results:</h2>
+            <pre id="results"></pre>
+        </div>
+
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
