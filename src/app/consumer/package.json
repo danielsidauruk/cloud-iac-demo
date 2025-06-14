@@ -1,0 +1,15 @@
+{
+    "name": "consumer-app",
+    "version": "1.0.0",
+    "description": "A simple app to consume messages from RabbitMQ.",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "amqplib": "^0.10.4",
+        "dotenv": "^16.4.5",
+        "readline": "^1.3.0"
+    },
+    "license": "MIT"
+}
