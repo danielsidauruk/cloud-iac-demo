@@ -1,4 +1,3 @@
-# OIDC Provider Setup
 data "tls_certificate" "container_cluster_oidc" {
   url = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
@@ -15,8 +14,7 @@ data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
     effect  = "Allow"
 
     condition {
-      test = "StringEquals"
-      // example output of varibale: oidc.eks.ap-southeast-3.amazonaws.com/id/1234567890ABCDEFEXAMPLE:sub
+      test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.container_cluster_oidc.url, "https://", "")}:sub"
       values   = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
     }
@@ -28,7 +26,6 @@ data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
   }
 }
 
-# Define IAM Role for Workload Identity
 resource "aws_iam_role" "workload_identity" {
   name               = "${var.application_name}-${var.environment_name}-workload-identity"
   assume_role_policy = data.aws_iam_policy_document.workload_identity_assume_role_policy.json
@@ -50,22 +47,34 @@ data "aws_iam_policy_document" "workload_identity_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "s3:*"
+      "s3:ListBucket",
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject",
     ]
-
     resources = [
-      "arn:aws:s3:::${aws_s3_bucket.private_bucket.bucket}/*"
+      "arn:aws:s3:::${var.bucket_name}",
+      "arn:aws:s3:::${var.bucket_name}/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "mq:Connect",
+      "mq:Receive",
+      "mq:Send"
+    ]
+    resources = [
+      aws_mq_broker.rabbitmq_broker.arn
     ]
   }
 }
 
-# Define IAM Policy for Secrets Access
 resource "aws_iam_policy" "workload_identity" {
-
   name        = "${var.application_name}-${var.environment_name}-workload-identity"
   description = "Policy for ${var.application_name}-${var.environment_name} Workload Identity"
   policy      = data.aws_iam_policy_document.workload_identity_policy.json
-
 }
 
 resource "aws_iam_role_policy_attachment" "workload_identity_policy" {

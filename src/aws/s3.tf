@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "private_bucket" {
-  bucket        = "${var.application_name}-${var.environment_name}-bucket-test"
+  bucket        = var.bucket_name
   force_destroy = true
 
   tags = {

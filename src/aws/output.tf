@@ -13,3 +13,15 @@ output "alb_controller_role" {
 output "workload_identity_role" {
   value = aws_iam_role.workload_identity.arn
 }
+
+output "rabbitmq_broker_mq_host" {
+  value = element(aws_mq_broker.rabbitmq_broker.instances[0].endpoints, 0) # Assumes AMQP is the first endpoint
+}
+
+output "redis_endpoint" {
+  value = aws_elasticache_cluster.redis.cache_nodes[0].address
+}
+
+output "rds_postgres_endpoint" {
+  value = aws_db_instance.postgres.address
+}

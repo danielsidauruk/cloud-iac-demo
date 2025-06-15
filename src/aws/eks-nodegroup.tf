@@ -22,4 +22,9 @@ resource "aws_eks_node_group" "main" {
     aws_iam_role_policy_attachment.eks_cni_policy,
     aws_iam_role_policy_attachment.eks_ecr_policy,
   ]
+
+  tags = {
+    application = var.application_name
+    environment = var.environment_name
+  }
 }

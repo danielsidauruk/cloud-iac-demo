@@ -9,7 +9,7 @@ resource "aws_db_instance" "postgres" {
   instance_class         = "db.t3.micro"
   allocated_storage      = 20
   db_name                = var.postgres_dbname
-  username               = var.postgres_username
+  username               = var.username
   password               = random_password.database_connection_string.result
   db_subnet_group_name   = aws_db_subnet_group.rds.name
   vpc_security_group_ids = [aws_security_group.rds.id]
