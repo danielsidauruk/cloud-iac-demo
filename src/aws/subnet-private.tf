@@ -5,10 +5,20 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   availability_zone = each.value.availability_zone
   cidr_block        = each.value.cidr_block
+
+  tags = {
+    application = var.application_name
+    environment = var.environment_name
+  }
 }
 
 resource "aws_eip" "nat" {
   for_each = local.private_subnets
+
+  tags = {
+    application = var.application_name
+    environment = var.environment_name
+  }
 }
 
 resource "aws_nat_gateway" "nat" {
@@ -21,6 +31,11 @@ resource "aws_nat_gateway" "nat" {
   depends_on = [
     aws_internet_gateway.main,
   ]
+
+  tags = {
+    application = var.application_name
+    environment = var.environment_name
+  }
 
 }
 

@@ -6,6 +6,11 @@ resource "aws_subnet" "public" {
   availability_zone       = each.value.availability_zone
   cidr_block              = each.value.cidr_block
   map_public_ip_on_launch = true
+
+  tags = {
+    application = var.application_name
+    environment = var.environment_name
+  }
 }
 
 # allow IGW access to the internet
