@@ -24,6 +24,7 @@ resource "aws_eks_node_group" "main" {
   ]
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-eks-nodegroup"
     application = var.application_name
     environment = var.environment_name
   }

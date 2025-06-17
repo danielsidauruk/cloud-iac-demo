@@ -1,11 +1,6 @@
 resource "aws_elasticache_subnet_group" "redis" {
   name       = "${var.application_name}-${var.environment_name}-redis-subnet-group"
-  subnet_ids = [for subnet in aws_subnet.private : subnet.id]
-
-  tags = {
-    application = var.application_name
-    environment = var.environment_name
-  }
+  subnet_ids = var.private_subnet_ids
 }
 
 resource "aws_elasticache_cluster" "redis" {
@@ -20,6 +15,7 @@ resource "aws_elasticache_cluster" "redis" {
   security_group_ids   = [aws_security_group.redis.id]
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-redis"
     application = var.application_name
     environment = var.environment_name
   }

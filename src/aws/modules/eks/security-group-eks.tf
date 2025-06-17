@@ -1,7 +1,7 @@
 resource "aws_security_group" "cluster" {
   name        = "${var.application_name}-${var.environment_name}-cluster"
   description = "Allow access to Cluster"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   egress {
     from_port = 0
@@ -52,7 +52,7 @@ resource "aws_security_group_rule" "nodeport_cluster_udp" {
 resource "aws_security_group" "cluster_nodes" {
   name        = "${var.application_name}-${var.environment_name}-cluster-nodes"
   description = "Allow access to Cluster Nodes"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   egress {
     from_port = 0

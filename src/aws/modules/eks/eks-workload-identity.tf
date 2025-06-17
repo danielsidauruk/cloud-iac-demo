@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.container_cluster_oidc.url, "https://", "")}:sub"
-      values   = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
+      values   = ["system:serviceaccount:${var.kubernetes_namespace}:${var.kubernetes_service_account_name}"]
     }
 
     principals {
@@ -40,7 +40,7 @@ data "aws_iam_policy_document" "workload_identity_policy" {
     ]
 
     resources = [
-      "arn:aws:secretsmanager:${var.primary_region}:${data.aws_caller_identity.current.account_id}:secret:*",
+      "arn:aws:secretsmanager:${var.primary_region}:${var.aws_account_id}:secret:*",
     ]
   }
 
@@ -66,7 +66,7 @@ data "aws_iam_policy_document" "workload_identity_policy" {
       "mq:Send"
     ]
     resources = [
-      aws_mq_broker.rabbitmq_broker.arn
+      var.rabbitmq_arn
     ]
   }
 }

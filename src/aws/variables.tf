@@ -41,12 +41,12 @@ variable "node_size" {
 }
 
 # Kubernetes Specific
-variable "k8s_namespace" {
+variable "kubernetes_namespace" {
   type        = string
   description = "Kubernetes namespace for service accounts."
 }
 
-variable "k8s_service_account_name" {
+variable "kubernetes_service_account_name" {
   type        = string
   description = "Kubernetes service account name for workload identity."
 }

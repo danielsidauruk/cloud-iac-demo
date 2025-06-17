@@ -5,7 +5,7 @@ resource "aws_mq_broker" "rabbitmq_broker" {
   host_instance_type         = "mq.t3.micro"
   deployment_mode            = "SINGLE_INSTANCE"
   security_groups            = [aws_security_group.rabbitmq_sg.id]
-  subnet_ids                 = [aws_subnet.private[0].id]
+  subnet_ids                 = [var.private_subnet_ids[0]]
   publicly_accessible        = false
   apply_immediately          = true
   auto_minor_version_upgrade = true
@@ -20,6 +20,7 @@ resource "aws_mq_broker" "rabbitmq_broker" {
   }
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-rabbitmq"
     application = var.application_name
     environment = var.environment_name
   }

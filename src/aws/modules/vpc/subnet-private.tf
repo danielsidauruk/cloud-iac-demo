@@ -7,6 +7,7 @@ resource "aws_subnet" "private" {
   cidr_block        = each.value.cidr_block
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-private-subnet"
     application = var.application_name
     environment = var.environment_name
   }
@@ -16,6 +17,7 @@ resource "aws_eip" "nat" {
   for_each = local.private_subnets
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-eip"
     application = var.application_name
     environment = var.environment_name
   }
@@ -33,6 +35,7 @@ resource "aws_nat_gateway" "nat" {
   ]
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-nat"
     application = var.application_name
     environment = var.environment_name
   }

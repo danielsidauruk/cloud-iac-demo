@@ -1,7 +1,7 @@
 resource "aws_security_group" "redis" {
   name        = "${var.application_name}-${var.environment_name}-redis-sg"
   description = "Allow Redis access"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 6379

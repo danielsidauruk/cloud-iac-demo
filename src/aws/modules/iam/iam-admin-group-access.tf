@@ -13,7 +13,7 @@ data "aws_iam_policy_document" "console_access" {
   statement {
     effect    = "Allow"
     actions   = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/*"]
+    resources = ["arn:aws:ssm:*:${var.aws_account_id}:parameter/*"]
   }
 
   statement {

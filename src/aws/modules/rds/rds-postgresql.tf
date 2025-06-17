@@ -1,6 +1,6 @@
 resource "aws_db_subnet_group" "rds" {
   name       = "${var.application_name}-${var.environment_name}-rds-subnet-group"
-  subnet_ids = [for subnet in aws_subnet.private : subnet.id]
+  subnet_ids = var.private_subnet_ids
 }
 
 resource "aws_db_instance" "postgres" {
@@ -18,6 +18,7 @@ resource "aws_db_instance" "postgres" {
   apply_immediately      = true
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-postgres"
     application = var.application_name
     environment = var.environment_name
   }

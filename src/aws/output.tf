@@ -1,27 +1,39 @@
-output "kubernetes_cluster_name" {
-  value = aws_eks_cluster.main.name
-}
 output "primary_region" {
-  value = var.primary_region
+  value       = var.primary_region
+  description = "The primary AWS region."
 }
-output "admin_group_arn" {
-  value = aws_iam_group.admin.arn
+
+output "kubernetes_cluster_name" {
+  value       = module.eks.kubernetes_cluster_name
+  description = "Name of the EKS cluster."
 }
-output "alb_controller_role" {
-  value = aws_iam_role.alb_controller.arn
+
+output "alb_controller_role_arn" {
+  value       = module.eks.alb_controller_role_arn
+  description = "ARN of the ALB Controller IAM role."
 }
+
+output "admin_controller_role" {
+  value       = module.eks.admin_controller_role
+  description = "ARN of the admin IAM role."
+}
+
 output "workload_identity_role" {
-  value = aws_iam_role.workload_identity.arn
+  value       = module.eks.workload_identity_role
+  description = "ARN of the K8s Workload Identity (IRSA) role."
 }
 
-output "rabbitmq_broker_mq_host" {
-  value = element(aws_mq_broker.rabbitmq_broker.instances[0].endpoints, 0) # Assumes AMQP is the first endpoint
+output "postgres_host_endpoint" {
+  value       = module.rds.postgres_host_endpoint
+  description = "PostgreSQL database endpoint."
 }
 
-output "redis_endpoint" {
-  value = aws_elasticache_cluster.redis.cache_nodes[0].address
+output "rabbitmq_host_endpoint" {
+  value       = module.mq.rabbitmq_host_endpoint
+  description = "RabbitMQ broker endpoint."
 }
 
-output "rds_postgres_endpoint" {
-  value = aws_db_instance.postgres.address
+output "redis_host_endpoint" {
+  value       = module.elasticache.redis_host_endpoint
+  description = "Redis ElastiCache endpoint."
 }

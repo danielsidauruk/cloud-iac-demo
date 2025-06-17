@@ -5,7 +5,7 @@ data "aws_iam_policy_document" "ecr_image_pusher_assume_role" {
     effect = "Allow"
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${var.ecr_image_pushers}"]
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:user/${var.ecr_image_pushers}"]
     }
     actions = ["sts:AssumeRole"]
   }
@@ -25,13 +25,13 @@ data "aws_iam_policy_document" "ecr_image_pusher" {
       "ecr:UploadLayerPart",
       "ecr:CompleteLayerUpload"
     ]
-    resources = [for repo in aws_ecr_repository.main : repo.arn]
+    resources = var.ecr_repositories_arn
   }
 
   statement {
     effect    = "Allow"
     actions   = ["ssm:GetParameter"]
-    resources = ["arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/*"]
+    resources = ["arn:aws:ssm:*:${var.aws_account_id}:parameter/*"]
   }
 }
 

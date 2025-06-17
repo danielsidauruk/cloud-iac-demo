@@ -7,6 +7,7 @@ resource "aws_ecr_repository" "main" {
   force_delete         = true
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-ecr"
     application = var.application_name
     environment = var.environment_name
   }

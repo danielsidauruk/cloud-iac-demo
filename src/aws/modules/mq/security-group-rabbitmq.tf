@@ -1,7 +1,7 @@
 resource "aws_security_group" "rabbitmq_sg" {
   name_prefix = "${var.application_name}-${var.environment_name}-rabbitmq-sg"
   description = "Allow access to Amazon MQ RabbitMQ broker"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   egress {
     from_port   = 0

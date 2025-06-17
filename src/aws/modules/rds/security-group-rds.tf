@@ -1,7 +1,7 @@
 resource "aws_security_group" "rds" {
   name        = "${var.application_name}-${var.environment_name}-rds-sg"
   description = "Allow PostgreSQL access"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 5432

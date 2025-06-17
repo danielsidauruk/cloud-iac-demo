@@ -3,6 +3,7 @@ resource "aws_s3_bucket" "private_bucket" {
   force_destroy = true
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-s3"
     application = var.application_name
     environment = var.environment_name
   }

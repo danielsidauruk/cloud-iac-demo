@@ -5,11 +5,12 @@ resource "random_password" "rabbitmq_password" {
 }
 
 resource "aws_secretsmanager_secret" "rabbitmq_password" {
-  name                    = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-34"
+  name                    = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-36"
   description             = "Rabbitmq password"
   recovery_window_in_days = 7
 
   tags = {
+    Name        = "${var.application_name}-${var.environment_name}-rabbitmq-secret"
     application = var.application_name
     environment = var.environment_name
   }
