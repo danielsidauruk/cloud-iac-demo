@@ -29,19 +29,19 @@ resource "kubernetes_manifest" "secret_provider_class" {
     kind       = "SecretProviderClass"
     metadata = {
       name      = "${var.application_name}-${var.environment_name}-secret-provider-class"
-      namespace = var.k8s_namespace
+      namespace = var.kubernetes_namespace
     }
     spec = {
       provider = "aws"
       parameters = {
         objects = yamlencode([
           {
-            objectName         = "${var.application_name}-${var.environment_name}-connection-string-test-24"
+            objectName         = "${var.application_name}-${var.environment_name}-connection-string-test-37"
             objectType         = "secretsmanager"
             objectVersionLabel = "AWSCURRENT"
           },
           {
-            objectName         = "${var.application_name}-${var.environment_name}-redis-endpoint-test-24"
+            objectName         = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-37"
             objectType         = "secretsmanager"
             objectVersionLabel = "AWSCURRENT"
           }
@@ -53,18 +53,18 @@ resource "kubernetes_manifest" "secret_provider_class" {
           type       = "Opaque"
           data = [
             {
-              key        = "database_connection_string"
-              objectName = "${var.application_name}-${var.environment_name}-connection-string-test-24"
+              key        = "database_password"
+              objectName = "${var.application_name}-${var.environment_name}-connection-string-test-37"
             }
           ]
         },
         {
-          secretName = "${var.application_name}-${var.environment_name}-redis-endpoint-secret"
+          secretName = "${var.application_name}-${var.environment_name}-rabbiqmq-password"
           type       = "Opaque"
           data = [
             {
-              key        = "redis_endpoint"
-              objectName = "${var.application_name}-${var.environment_name}-redis-endpoint-test-24"
+              key        = "rabbitmq_password"
+              objectName = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-37"
             }
           ]
         }

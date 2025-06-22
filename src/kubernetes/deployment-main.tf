@@ -1,22 +1,26 @@
-resource "kubernetes_deployment" "api" {
+locals {
+  application_name = "${var.application_name}-main"
+}
+
+resource "kubernetes_deployment" "main" {
   metadata {
-    name      = var.application_name
-    namespace = var.k8s_namespace
+    name      = local.application_name
+    namespace = kubernetes_namespace.main.metadata[0].name
   }
 
   spec {
-    replicas = 3
+    replicas = 1
 
     selector {
       match_labels = {
-        app = var.application_name
+        app = local.application_name
       }
     }
 
     template {
       metadata {
         labels = {
-          app = var.application_name
+          app = local.application_name
         }
       }
 
@@ -35,12 +39,11 @@ resource "kubernetes_deployment" "api" {
         }
 
         container {
-          # image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.primary_region}.amazonaws.com/${var.web_api_image.name}:${var.web_api_image.version}"
-          image = "nginx"
-          name  = var.application_name
+          image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.primary_region}.amazonaws.com/ecr-openmusicapi-dev-main:1.0.1"
+          name  = local.application_name
 
           port {
-            container_port = 80
+            container_port = 3000
           }
 
           volume_mount {
@@ -49,21 +52,27 @@ resource "kubernetes_deployment" "api" {
             read_only  = true
           }
 
+          env_from {
+            config_map_ref {
+              name = kubernetes_config_map.application_env_config.metadata[0].name
+            }
+          }
+
           env {
-            name = "DATABASE_CONNECTION_STRING_JSON"
+            name = "PGPASSWORD"
             value_from {
               secret_key_ref {
                 name = "${var.application_name}-${var.environment_name}-rds-connection-secret"
-                key  = "database_connection_string"
+                key  = "database_password"
               }
             }
           }
           env {
-            name = "REDIS_ENDPOINT_JSON"
+            name = "RABBITMQ_PASSWORD"
             value_from {
               secret_key_ref {
-                name = "${var.application_name}-${var.environment_name}-redis-endpoint-secret"
-                key  = "redis_endpoint"
+                name = "${var.application_name}-${var.environment_name}-rabbiqmq-password"
+                key  = "rabbitmq_password"
               }
             }
           }
@@ -71,28 +80,22 @@ resource "kubernetes_deployment" "api" {
       }
     }
   }
-
-  timeouts {
-    create = "3m"
-    update = "3m"
-    delete = "5m"
-  }
 }
 
-resource "kubernetes_service" "api" {
+resource "kubernetes_service" "main" {
   metadata {
-    name      = "${var.application_name}-service"
-    namespace = var.k8s_namespace
+    name      = "${local.application_name}-service"
+    namespace = var.kubernetes_namespace
 
   }
   spec {
     type = "ClusterIP"
     port {
-      port        = 80
-      target_port = 80
+      port        = 3000
+      target_port = 3000
     }
     selector = {
-      app = var.application_name
+      app = local.application_name
     }
   }
 }

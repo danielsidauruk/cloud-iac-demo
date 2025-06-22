@@ -28,11 +28,11 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 data "aws_eks_cluster" "main" {
-  name = var.cluster_name
+  name = var.kubernetes_cluster_name
 }
 
 data "aws_eks_cluster_auth" "main" {
-  name = var.cluster_name
+  name = var.kubernetes_cluster_name
 }
 
 provider "kubernetes" {

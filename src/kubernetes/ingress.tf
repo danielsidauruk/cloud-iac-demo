@@ -1,7 +1,7 @@
 resource "kubernetes_ingress_v1" "ingress" {
   metadata {
     name      = "${var.application_name}-ingress"
-    namespace = var.k8s_namespace
+    namespace = var.kubernetes_namespace
     annotations = {
       "kubernetes.io/ingress.class" = "nginx"
     }
@@ -10,14 +10,27 @@ resource "kubernetes_ingress_v1" "ingress" {
     rule {
       http {
         path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = kubernetes_service.main.metadata[0].name
+              port {
+                number = 3000
+              }
+            }
+          }
+        }
+        path {
           path      = "/api"
           path_type = "Prefix"
 
           backend {
             service {
-              name = kubernetes_service.web_api.metadata[0].name
+              name = kubernetes_service.main.metadata[0].name
               port {
-                number = 80
+                number = 3000
               }
             }
           }
