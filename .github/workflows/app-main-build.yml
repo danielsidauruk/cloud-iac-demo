@@ -13,6 +13,7 @@ env:
   APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
   SERVICE_NAME: ${{ vars.SERVICE_NAME }}
   ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
+  MAIN_REPOSITORY: ${{ vars.MAIN_REPOSITORY }}
   NODE_VERSION: '20'
 
 jobs:
@@ -66,7 +67,7 @@ jobs:
           echo "ecr-registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
           
           # Build image tag using short SHA
-          IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.SERVICE_NAME }}:${SHORT_SHA}"
+          IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
           
           echo "✅ Short SHA: $SHORT_SHA"
