@@ -19,6 +19,6 @@ ecr_image_pushers = "developer"
 
 # Application Resources
 repository_list = ["main", "consumer"]
-username        = "app-administrator"
+username        = "appadministrator"
 postgres_dbname = "appdb"
-bucket_name     = "app-bucket-123"
+bucket_name     = "app-dev-bucket"

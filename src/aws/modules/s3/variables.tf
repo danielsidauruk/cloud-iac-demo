@@ -7,7 +7,6 @@ variable "application_name" {
 variable "environment_name" {
   type        = string
   description = "Deployment environment."
-  default     = "dev"
 }
 
 variable "primary_region" {

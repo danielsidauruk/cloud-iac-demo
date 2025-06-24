@@ -9,12 +9,6 @@ terraform {
       version = "~> 3.5.1"
     }
   }
-  backend "s3" {
-    bucket  = "tfstate-app-bucket"
-    region  = "ap-southeast-1"
-    key     = "dev/terraform.tfstate"
-    encrypt = true
-  }
 }
 
 # Configure the AWS Provider
