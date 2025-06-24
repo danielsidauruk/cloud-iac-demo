@@ -10,9 +10,9 @@ terraform {
     }
   }
   backend "s3" {
-    bucket  = "openmusicapi-infra-tfstate"
-    region  = "ap-southeast-3"
-    key     = "openmusicapi-infra-state"
+    bucket  = "tfstate-app-bucket"
+    region  = "ap-southeast-1"
+    key     = "dev/terraform.tfstate"
     encrypt = true
   }
 }
