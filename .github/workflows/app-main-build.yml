@@ -5,15 +5,16 @@ on:
   push:
     branches:
       - main
-    # tags:
-    #   - 'v*'
+    paths:
+      - 'src/app/main/**'
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
   APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
-  SERVICE_NAME: ${{ vars.SERVICE_NAME }}
   ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
   MAIN_REPOSITORY: ${{ vars.MAIN_REPOSITORY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   NODE_VERSION: '20'
 
 jobs:
@@ -21,7 +22,7 @@ jobs:
     name: Build and Push to ECR
     runs-on: ubuntu-latest
     outputs:
-      image-tag: ${{ steps.build.outputs.full-image-tag }}
+      image-tag: ${{ steps.build.outputs.image-tag }}
       commit-sha: ${{ github.sha }}
     
     steps:
@@ -44,8 +45,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -54,26 +55,15 @@ jobs:
       - name: Get AWS Account ID and build image tag
         id: aws-info
         run: |
-          # Get short SHA (7 characters)
           SHORT_SHA=${GITHUB_SHA:0:7}
-          echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          
-          # Get AWS Account ID dynamically
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "aws-account-id=$AWS_ACCOUNT_ID" >> $GITHUB_OUTPUT
-          
-          # Build ECR registry URL
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
-          echo "ecr-registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
-          
-          # Build image tag using short SHA
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
+          
+          echo "ecr-registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
           
-          echo "✅ Short SHA: $SHORT_SHA"
-          echo "✅ AWS Account ID: $AWS_ACCOUNT_ID"
-          echo "✅ ECR Registry: $ECR_REGISTRY"
-          echo "✅ Image Tag: $IMAGE_TAG"
+          echo "🔨 Building image: $IMAGE_TAG"
 
       - name: Build and push Docker image
         id: build
@@ -85,22 +75,13 @@ jobs:
           docker build -t $FULL_IMAGE_TAG .
           docker push $FULL_IMAGE_TAG
           
-          # Set output - just the full image tag
-          echo "full-image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
           
-          echo "✅ Built and pushed: $FULL_IMAGE_TAG"
+          echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
 
       - name: Summary
         run: |
-          echo "🎉 Build completed!"
-          echo "🏦 AWS Account ID: ${{ steps.aws-info.outputs.aws-account-id }}"
+          echo "🎉 Build completed successfully!"
+          echo "📦 Image: ${{ steps.build.outputs.image-tag }}"
           echo "🌍 Region: ${{ env.AWS_REGION }}"
-          echo "🔖 Short SHA: ${{ steps.aws-info.outputs.short-sha }}"
-          echo "📦 Full Image Tag: ${{ steps.build.outputs.full-image-tag }}"
-
-  # deploy:
-  #   needs: build-and-push
-  #   uses: ./.github/workflows/k8s-apply.yml
-  #   with:
-  #     image-tag: ${{ needs.build-and-push.outputs.image-tag }}
-  #   secrets: inherit
+          echo "🏪 ECR Registry: ${{ steps.aws-info.outputs.ecr-registry }}"
