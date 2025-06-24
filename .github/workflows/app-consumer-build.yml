@@ -1,4 +1,4 @@
-name: Simple Consumer App Build
+name: ${{ env.APPLICATION_NAME }}-${{ env.CONSUMER_REPOSITORY }}-build
 
 on:
   workflow_dispatch:
