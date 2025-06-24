@@ -85,3 +85,5 @@ async function startRabbitMQConsumer() {
 }
 
 startRabbitMQConsumer();
+
+// Testing to trigger Github Workflows

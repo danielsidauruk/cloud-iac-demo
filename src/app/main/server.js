@@ -186,3 +186,5 @@ app.listen(PORT, () => {
 
     redisClient.connect().catch(err => console.error('Initial Redis connection failed:', err.message));
 });
+
+// Testing to trigger Github Workflows

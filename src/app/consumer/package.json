@@ -1,7 +1,7 @@
 {
     "name": "consumer-app",
     "version": "1.0.0",
-    "description": "A simple app to consume messages from RabbitMQ.",
+    "description": "Consumer App",
     "main": "server.js",
     "scripts": {
         "start": "node server.js"
