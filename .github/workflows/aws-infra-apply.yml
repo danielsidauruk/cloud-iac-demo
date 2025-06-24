@@ -52,5 +52,8 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -var-file="terraform.tfvars"
 
+      - name: Terraform Apply Az
+        run: terraform apply -auto-approve -target=module.vpc.random_shuffle.az
+      
       - name: Terraform Apply
         run: terraform apply -auto-approve -var-file="terraform.tfvars"
