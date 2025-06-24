@@ -17,6 +17,7 @@ jobs:
   build-and-push:
     name: Build and Push to ECR
     runs-on: ubuntu-latest
+    environment: dev
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
       commit-sha: ${{ github.sha }}
