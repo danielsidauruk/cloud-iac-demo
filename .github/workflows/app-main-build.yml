@@ -1,4 +1,4 @@
-name: Simple Main App Build
+name: App Main Build
 
 on:
   workflow_dispatch:
