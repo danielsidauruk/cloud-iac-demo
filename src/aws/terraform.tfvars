@@ -21,4 +21,4 @@ ecr_image_pushers = "developer"
 repository_list = ["main", "consumer"]
 username        = "appadministrator"
 postgres_dbname = "appdb"
-bucket_name     = "app-dev-bucket-12345"
+bucket_name     = "app-dev-bucket-12345-1107"
