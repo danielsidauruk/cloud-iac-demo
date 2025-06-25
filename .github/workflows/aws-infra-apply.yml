@@ -46,5 +46,6 @@ jobs:
 
       - name: 🚀 Deploy Infrastructure to AWS
         run: |
-          terraform apply -auto-approve -target=module.vpc.random_shuffle.az
+          pwd
+          terraform apply -auto-approve -target=module.vpc.random_shuffle.az -var-file="terraform.tfvars"
           terraform apply -auto-approve -var-file="terraform.tfvars"
