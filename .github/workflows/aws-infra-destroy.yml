@@ -1,0 +1,98 @@
+name: 💥 AWS Infrastructure Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: 'Type "DESTROY" to confirm infrastructure destruction'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to destroy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+env:
+  TF_VERSION: '1.5.0'
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+jobs:
+  terraform-destroy:
+    name: 💥 Destroy AWS Infrastructure
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    defaults:
+      run:
+        working-directory: ./src/aws
+    
+    steps:
+      - name: 🔒 Validate Destroy Confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
+            echo "❌ Destroy confirmation failed. You must type 'DESTROY' exactly."
+            echo "You entered: '${{ github.event.inputs.confirm_destroy }}'"
+            exit 1
+          fi
+          echo "✅ Destroy confirmation validated"
+
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔧 Initialize Terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+            -backend-config="key=${{ github.event.inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+            -backend-config="encrypt=true"
+
+      - name: 📋 Plan Infrastructure Destruction
+        run: |
+          echo "🔍 Planning destruction of infrastructure..."
+          terraform plan -destroy -var-file="terraform.tfvars" -out=destroy.tfplan
+
+      - name: 👀 Show Destroy Plan
+        run: |
+          echo "📋 Resources that will be DESTROYED:"
+          terraform show destroy.tfplan
+
+      - name: ⚠️ Final Confirmation Warning
+        run: |
+          echo "⚠️  WARNING: This will PERMANENTLY DESTROY the following infrastructure:"
+          echo "🏗️  Environment: ${{ github.event.inputs.environment }}"
+          echo "🌍 Region: ${{ env.AWS_REGION }}"
+          echo "📦 All resources defined in your Terraform configuration"
+          echo ""
+          echo "🚨 This action CANNOT be undone!"
+          echo ""
+          echo "Proceeding with destruction in 10 seconds..."
+          sleep 10
+
+      - name: 💥 Execute Infrastructure Destruction
+        run: |
+          echo "💥 Destroying infrastructure..."
+          terraform apply -auto-approve destroy.tfplan
+          echo "✅ Infrastructure destruction completed"
+
+      - name: 🧹 Cleanup Summary
+        run: |
+          echo "🧹 Infrastructure destroyed successfully"
+          echo "📝 State file remains in S3 for audit purposes"
+          echo "🗑️  To completely remove state, manually delete from S3 bucket"

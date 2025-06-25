@@ -15,7 +15,7 @@ env:
 
 jobs:
   build-and-push:
-    name: Build and Push to ECR
+    name: 🏗️ Build & Push Consumer App
     runs-on: ubuntu-latest
     environment: dev
     outputs:
@@ -23,33 +23,33 @@ jobs:
       commit-sha: ${{ github.sha }}
     
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: src/app/consumer/package-lock.json
 
-      - name: Install dependencies and test
+      - name: 📚 Install Dependencies & Run Tests
         run: |
           cd src/app/consumer
           npm ci
           npm test || echo "⚠️ No tests found - skipping"
 
-      - name: Configure AWS credentials
+      - name: 🔐 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      - name: 🔑 Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Get AWS Account ID and build image tag
+      - name: 🏷️ Generate Image Tag & Registry Info
         id: aws-info
         run: |
           SHORT_SHA=${GITHUB_SHA:0:7}
@@ -57,28 +57,23 @@ jobs:
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.CONSUMER_REPOSITORY }}:${SHORT_SHA}"
           
-          echo "ecr-registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          
           echo "🔨 Building image: $IMAGE_TAG"
 
-      - name: Build and push Docker image
+      - name: 🐳 Build & Push Docker Image
         id: build
         run: |
           cd src/app/consumer
           
           FULL_IMAGE_TAG="${{ steps.aws-info.outputs.image-tag }}"
           
-          docker build -t $FULL_IMAGE_TAG .
+          docker build . -t $FULL_IMAGE_TAG
           docker push $FULL_IMAGE_TAG
           
           echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
-          
           echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
 
       - name: Summary
         run: |
           echo "🎉 Build completed successfully!"
-          echo "🌍 Region: ${{ env.AWS_REGION }}"
-          echo "🏪 ECR Registry: ${{ steps.aws-info.outputs.ecr-registry }}"
           echo "📦 Image: ${{ steps.build.outputs.image-tag }}"

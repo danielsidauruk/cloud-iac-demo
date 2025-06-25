@@ -1,4 +1,4 @@
-name: 🚀 AWS Infra Apply
+name: 🚀 AWS Infrastructure Apply
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   terraform-apply:
-    name: 🚀 Apply Infrastructure
+    name: 🚀 Deploy AWS Infrastructure
     runs-on: ubuntu-latest
     environment: dev
     defaults:
@@ -20,22 +20,22 @@ jobs:
         working-directory: ./src/aws
     
     steps:
-      - name: Checkout
+      - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
+      - name: ⚙️ Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Configure AWS Credentials
+      - name: 🔐 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: 🔧 Terraform Setup
+      - name: 🔧 Terraform Initialization & Validation
         run: |
           terraform fmt -check
           terraform init \
@@ -44,8 +44,7 @@ jobs:
             -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
           terraform validate
 
-      - name: 🚀 Terraform Deploy
+      - name: 🚀 Deploy Infrastructure to AWS
         run: |
-          terraform apply -auto-approve -var-file="terraform.tfvars" -target=module.vpc.random_shuffle.az
-          terraform plan -var-file="terraform.tfvars"
+          terraform apply -auto-approve -target=module.vpc.random_shuffle.az
           terraform apply -auto-approve -var-file="terraform.tfvars"
