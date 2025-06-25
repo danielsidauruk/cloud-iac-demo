@@ -28,14 +28,6 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-
-# EKS/Kubernetes Specific
-variable "node_image_type" {
-  type        = string
-  description = "K8s node AMI type."
-}
-
-
 # Credentials/Access
 variable "username" {
   type        = string
