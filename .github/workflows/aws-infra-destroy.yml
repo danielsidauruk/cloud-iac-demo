@@ -31,6 +31,9 @@ jobs:
         working-directory: ./src/aws
     
     steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
       - name: 🔒 Validate Destroy Confirmation
         run: |
           if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
@@ -39,9 +42,6 @@ jobs:
             exit 1
           fi
           echo "✅ Destroy confirmation validated"
-
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
 
       - name: ⚙️ Setup Terraform
         uses: hashicorp/setup-terraform@v3
