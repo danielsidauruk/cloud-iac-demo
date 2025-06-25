@@ -38,12 +38,13 @@ jobs:
       - name: 🔧 Terraform Initialization & Validation
         run: |
           terraform fmt -check
-          terraform init \
+          terraform init -migrate-state \
             -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
             -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
             -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
 
           ls
+          terraform state list
           terraform apply -target "module.vpc.random_shuffle.az" -auto-approve
           terraform apply -auto-approve
 
