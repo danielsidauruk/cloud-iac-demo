@@ -42,10 +42,13 @@ jobs:
             -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
             -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
             -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
-          terraform validate
 
-      - name: 🚀 Deploy Infrastructure to AWS
-        run: |
-          pwd
-          terraform apply -auto-approve -target=module.vpc.random_shuffle.az -var-file="terraform.tfvars"
-          terraform apply -auto-approve -var-file="terraform.tfvars"
+          ls
+          terraform apply -target "module.vpc.random_shuffle.az" -auto-approve
+          terraform apply -auto-approve
+
+      # - name: 🚀 Deploy Infrastructure to AWS
+      #   run: |
+      #     pwd
+      #     terraform apply -auto-approve -target "module.vpc.random_shuffle.az"
+      #     terraform apply -auto-approve
