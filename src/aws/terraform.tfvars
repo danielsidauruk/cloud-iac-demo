@@ -6,7 +6,7 @@ primary_region   = "ap-southeast-1"
 # Network & Infrastructure
 vpc_cidr_block  = "10.0.0.0/21"
 az_count        = 3
-node_image_type = "AL2023_x86_64"
+node_image_type = "AL2023_x86_64_STANDARD"
 node_size       = "t3.medium"
 
 # Kubernetes Specific
