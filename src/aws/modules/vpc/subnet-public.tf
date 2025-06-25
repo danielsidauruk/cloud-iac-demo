@@ -27,6 +27,10 @@ resource "aws_route_table" "public" {
     aws_vpc.main,
     aws_internet_gateway.main
   ]
+
+  tags = {
+    Name = "${var.application_name}-${var.environment_name}-public-subnet"
+  }
 }
 
 resource "aws_route_table_association" "public" {
