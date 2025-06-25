@@ -33,7 +33,6 @@ variable "private_subnet_ids" {
 variable "node_image_type" {
   type        = string
   description = "K8s node AMI type."
-  default     = "AL2_x86_64"
 }
 
 

@@ -31,7 +31,6 @@ variable "az_count" {
 variable "node_image_type" {
   type        = string
   description = "The type of AMI or image used for Kubernetes nodes."
-  default     = "AL2_x86_64"
 }
 
 variable "node_size" {
