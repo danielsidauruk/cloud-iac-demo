@@ -58,15 +58,16 @@ jobs:
         run: |
           ls
           sudo apt-get install tree
+          echo $GITHUB_WORKSPACE
           tree -L 4
-          echo "=== Listing all files in artifacts directory ==="
+          echo "=== Listing all files in main-image-tag directory ==="
           ls -la 
           echo ""
-          echo "=== Recursive listing of artifacts ==="
-          find ./artifacts/ -type f -exec ls -la {} \;
+          echo "=== Recursive listing of main-image-tag ==="
+          find ./main-image-tag/ -type f -exec ls -la {} \;
           echo ""
           echo "=== Content of all text files ==="
-          find ./artifacts/ -name "*.txt" -exec echo "File: {}" \; -exec cat {} \; -exec echo "" \;
+          find ./main-image-tag/ -name "*.txt" -exec echo "File: {}" \; -exec cat {} \; -exec echo "" \;
           echo ""
           echo "=== Current working directory ==="
           pwd
