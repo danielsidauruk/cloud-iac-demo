@@ -1,4 +1,4 @@
-name: 📦 App Main Build & Push
+name: 📦 App Main Build
 
 on:
   push:
