@@ -55,7 +55,7 @@ jobs:
         working-directory: ./src/aws
         run: |
           echo "main_image=${{ github.event.workflow_run.outputs.main_image }}" >> "$GITHUB_OUTPUT"
-          echo "consumer_image=${{ github.event.workflow_run.outputs.consumer_image }} >> "GITHUB_OUTPUT"
+          echo "consumer_image=${{ github.event.workflow_run.outputs.consumer_image }}" >> "$GITHUB_OUTPUT"
 
           echo "main_image: $main_image"
           echo "consumer_image: $consumer_image"
@@ -78,6 +78,7 @@ jobs:
           echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+
 
   kubernetes:
     name: ☸️ Deploy to Kubernetes
