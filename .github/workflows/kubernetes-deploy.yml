@@ -55,8 +55,10 @@ jobs:
       - name: 🔍 Debug Artifacts
         run: |
           ls
+          sudo apt-get install tree
+          tree -L 3
           echo "=== Listing all files in artifacts directory ==="
-          ls -la ./artifacts/
+          ls -la 
           echo ""
           echo "=== Recursive listing of artifacts ==="
           find ./artifacts/ -type f -exec ls -la {} \;

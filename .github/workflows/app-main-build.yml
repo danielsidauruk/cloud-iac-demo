@@ -78,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: main-image-tag
-          path: src/app/main/main-image-tag.txt
+          path: main-image-tag.txt
           retention-days: 1
 
       - name: 🚀 Trigger Deploy
