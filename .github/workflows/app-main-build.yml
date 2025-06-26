@@ -58,14 +58,11 @@ jobs:
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
           
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "image-tag=$IMAGE_TAG" >> $GITHUB_ENV
-          
           echo "🔨 Building image: $IMAGE_TAG"
 
       - name: 🐳 Build & Push Docker Image
         id: build
         run: |
-          echo $(image-tag)
           cd src/app/main
           
           FULL_IMAGE_TAG="${{ steps.aws-info.outputs.image-tag }}"
@@ -74,7 +71,26 @@ jobs:
           docker push $FULL_IMAGE_TAG
           
           echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "$FULL_IMAGE_TAG" > main-image-tag.txt
           echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
+
+      - name: 📤 Upload Main Image Tag
+        uses: actions/upload-artifact@v4
+        with:
+          name: main-image-tag
+          path: src/app/main/main-image-tag.txt
+          retention-days: 1
+
+      - name: 🚀 Trigger Deploy
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GHP_TOKEN }}
+          event-type: deploy-ready
+          client-payload: |
+            {
+              "app": "main",
+              "run_id": "${{ github.run_id }}"
+            }
 
       - name: 📋 Build Summary
         run: |
