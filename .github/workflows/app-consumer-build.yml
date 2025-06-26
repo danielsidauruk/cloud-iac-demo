@@ -71,7 +71,7 @@ jobs:
           docker push $FULL_IMAGE_TAG
 
           echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "$FULL_IMAGE_TAG" > consumer-image-tag.txt # File created in ./src/app/consumer/
+          echo "$FULL_IMAGE_TAG" > consumer-image-tag.txt
           echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
 
       - name: 📤 Upload Consumer Image Tag
