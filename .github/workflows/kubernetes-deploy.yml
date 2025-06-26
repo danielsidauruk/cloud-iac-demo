@@ -43,6 +43,7 @@ jobs:
         with:
           name: main-image-tag
           path: ./artifacts/main-image-tag/
+          run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
         
       - name: 📦 Download Consumer Image Tag
@@ -50,6 +51,7 @@ jobs:
         with:
           name: consumer-image-tag
           path: ./artifacts/consumer-image-tag/
+          run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
 
       - name: 🔍 Debug Artifacts
