@@ -42,8 +42,8 @@ jobs:
         run: |
           terraform init \
             -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
-            -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
             -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+            -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
             -backend-config="encrypt=true"
 
       - name: ✅ Validate Terraform Configuration

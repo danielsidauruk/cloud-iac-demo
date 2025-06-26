@@ -22,7 +22,7 @@ jobs:
       run:
         working-directory: ./src/app/main
     outputs:
-      main-image: ${{ steps.build.outputs.image-tag }}
+      main-image: ${{ steps.build.outputs.image_tag }}
     
     steps:
       - name: 📥 Checkout Source Code
@@ -58,40 +58,22 @@ jobs:
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
           
-          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "🔨 Building image: $IMAGE_TAG"
 
       - name: 🐳 Build & Push Docker Image
         id: build
         run: |
-          FULL_IMAGE_TAG="${{ steps.aws-info.outputs.image-tag }}"
+          FULL_IMAGE_TAG="${{ steps.aws-info.outputs.image_tag }}"
           
           docker build . -t $FULL_IMAGE_TAG
           docker push $FULL_IMAGE_TAG
           
-          echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_ENV
+          echo "image_tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image_tag=$FULL_IMAGE_TAG" >> $GITHUB_ENV
           echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
-
-      # - name: 📤 Upload Main Image Tag
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: main-image-tag
-      #     path: main-image-tag.txt
-      #     retention-days: 1
-
-      # - name: 🚀 Trigger Deploy
-      #   uses: peter-evans/repository-dispatch@v3
-      #   with:
-      #     token: ${{ secrets.GHP_TOKEN }}
-      #     event-type: deploy-ready
-      #     client-payload: |
-      #       {
-      #         "app": "main",
-      #         "run_id": "${{ github.run_id }}"
-      #       }
 
       - name: 📋 Build Summary
         run: |
           echo "🎉 Build completed successfully!"
-          echo "📦 Image: ${{ steps.build.outputs.image-tag }}"
+          echo "📦 Image: ${{ steps.build.outputs.image_tag }}"

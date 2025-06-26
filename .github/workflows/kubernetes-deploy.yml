@@ -55,9 +55,10 @@ jobs:
         working-directory: ./src/aws
         run: |
           terraform init \
-            -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
-            -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
-            -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
+              -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+              -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+              -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
+              -backend-config="encrypt=true"
 
           echo "application_name=$(terraform output -raw application_name)" >> "$GITHUB_OUTPUT"
           echo "environment_name=$(terraform output -raw environment_name)" >> "$GITHUB_OUTPUT"
@@ -72,7 +73,7 @@ jobs:
           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
 
-          echo "main_image=${{ github.event.workflow_run.outputs.main_image }}"
+          echo "main_image=${{ github.event.workflow_run.outputs.main_image }}" >> "$GITHUB_OUTPUT"
 
           echo $main_image
 
@@ -117,13 +118,14 @@ jobs:
           # TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
         run: |
            terraform fmt -check
-            terraform init \
+           terraform init \
               -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
-              -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
-              -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
+              -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+              -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
+              -backend-config="encrypt=true"
             terraform validate
 
-            echo $TF_VAR_main_image
+            echo "main_image: $TF_VAR_main_image"
 
             terraform apply -auto-approve -target=helm_release.csi_secrets_store
             terraform apply -auto-approve
