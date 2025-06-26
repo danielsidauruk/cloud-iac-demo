@@ -54,8 +54,8 @@ jobs:
       - name: 🏷️ Get Image Tags
         id: get-tags
         run: |
-          MAIN_IMAGE=$(cat ./artifacts/main-image-tag.txt)
-          CONSUMER_IMAGE=$(cat ./artifacts/consumer-image-tag.txt)
+          MAIN_IMAGE=$(cat ./artifacts/src/app/main/main-image-tag.txt)
+          CONSUMER_IMAGE=$(cat ./artifacts/src/app/consumer/consumer-image-tag.txt)
           
           echo "main_image=${MAIN_IMAGE}" >> $GITHUB_OUTPUT
           echo "consumer_image=${CONSUMER_IMAGE}" >> $GITHUB_OUTPUT
