@@ -1,0 +1,165 @@
+name: ☸️ Kubernetes Deployment
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/kubernetes/**']
+  workflow_run:
+    workflows: ["📦 App Main Build", "📦 App Consumer Build"]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  TF_VERSION: '1.5.0'
+
+jobs:
+  infra-outputs:
+    name: 📤 Get Infrastructure Outputs
+    runs-on: ubuntu-latest
+    environment: dev
+    outputs:
+      application_name: ${{ steps.outputs.outputs.application_name }}
+      environment_name: ${{ steps.outputs.outputs.environment_name }}
+      primary_region: ${{ steps.outputs.outputs.primary_region }}
+      kubernetes_cluster_name: ${{ steps.outputs.outputs.kubernetes_cluster_name }}
+      kubernetes_namespace: ${{ steps.outputs.outputs.kubernetes_namespace }}
+      kubernetes_service_account_name: ${{ steps.outputs.outputs.kubernetes_service_account_name }}
+      alb_controller_role: ${{ steps.outputs.outputs.alb_controller_role }}
+      workload_identity_role: ${{ steps.outputs.outputs.workload_identity_role }}
+      bucket_name: ${{ steps.outputs.outputs.bucket_name }}
+      postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
+      rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
+      redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
+      main_image: ${{steps.get-tags.outputs.main_image}}
+      consumer_image: ${{steps.get-tags.outputs.consumer_image}}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Download Main Image Tag
+        uses: actions/download-artifact@v4
+        with:
+          name: main-image-tag
+          path: ./artifacts/
+        continue-on-error: true
+        
+      - name: 📦 Download Consumer Image Tag
+        uses: actions/download-artifact@v4
+        with:
+          name: consumer-image-tag
+          path: ./artifacts/
+        continue-on-error: true
+
+      - name: 🏷️ Get Image Tags
+        id: get-tags
+        run: |
+          MAIN_IMAGE=$(cat ./artifacts/main-image-tag.txt)
+          CONSUMER_IMAGE=$(cat ./artifacts/consumer-image-tag.txt)
+          
+          echo "main_image=${MAIN_IMAGE}" >> $GITHUB_OUTPUT
+          echo "consumer_image=${CONSUMER_IMAGE}" >> $GITHUB_OUTPUT
+          
+          echo "🏷️ Main image: ${MAIN_IMAGE}"
+          echo "🏷️ Consumer image: ${CONSUMER_IMAGE}"
+
+      - name: ⚙️ Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.BACKEND_REGION }}
+
+      - name: 📊 Extract Infrastructure Outputs
+        id: outputs
+        working-directory: ./src/aws
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+            -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
+            -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
+
+          echo "application_name=$(terraform output -raw application_name)" >> "$GITHUB_OUTPUT"
+          echo "environment_name=$(terraform output -raw environment_name)" >> "$GITHUB_OUTPUT"
+          echo "primary_region=$(terraform output -raw primary_region)" >> "$GITHUB_OUTPUT"
+          echo "kubernetes_cluster_name=$(terraform output -raw kubernetes_cluster_name)" >> "$GITHUB_OUTPUT"
+          echo "kubernetes_namespace=$(terraform output -raw kubernetes_namespace)" >> "$GITHUB_OUTPUT"
+          echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
+          echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
+          echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
+          echo "bucket_name=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
+          echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
+          echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
+          echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+
+  kubernetes:
+    name: ☸️ Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: infra-outputs
+    environment: dev
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.TF_BACKEND_REGION }}
+
+      - name: 🔧 Initialize Terraform for Kubernetes
+        working-directory: ./src/kubernetes
+        env:
+          TF_VAR_application_name: ${{ needs.infra-outputs.outputs.application_name }}
+          TF_VAR_environment_name: ${{ needs.infra-outputs.outputs.environment_name }}
+          TF_VAR_primary_region: ${{ needs.infra-outputs.outputs.primary_region }}
+          TF_VAR_kubernetes_cluster_name: ${{ needs.infra-outputs.outputs.kubernetes_cluster_name }}
+          TF_VAR_kubernetes_namespace: ${{ needs.infra-outputs.outputs.kubernetes_namespace }}
+          TF_VAR_kubernetes_service_account_name: ${{ needs.infra-outputs.outputs.kubernetes_service_account_name }}
+          TF_VAR_alb_controller_role: ${{ needs.infra-outputs.outputs.alb_controller_role }}
+          TF_VAR_workload_identity_role: ${{ needs.infra-outputs.outputs.workload_identity_role }}
+          TF_VAR_bucket_name: ${{ needs.infra-outputs.outputs.bucket_name }}
+          TF_VAR_postgres_host_endpoint: ${{ needs.infra-outputs.outputs.postgres_host_endpoint }}
+          TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
+          TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
+          TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
+          TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
+        run: |
+           terraform fmt -check
+            terraform init \
+              -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+              -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
+              -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
+            terraform validate
+      
+      - name: 🛠️ Setup eksctl CLI Tool
+        run: |
+          # Set ARCH to the appropriate value if running on a different architecture
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+
+          # Download eksctl
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+
+          # Optionally verify checksum
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+
+          # Extract and move to a location in PATH
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+          rm eksctl_$PLATFORM.tar.gz
+
+          # Verify installation
+          eksctl version
