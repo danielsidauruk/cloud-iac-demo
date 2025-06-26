@@ -14,8 +14,6 @@ on:
         type: choice
         options:
           - dev
-          - staging
-          - prod
 
 env:
   TF_VERSION: '1.5.0'
@@ -72,18 +70,6 @@ jobs:
         run: |
           echo "📋 Resources that will be DESTROYED:"
           terraform show destroy.tfplan
-
-      - name: ⚠️ Final Confirmation Warning
-        run: |
-          echo "⚠️  WARNING: This will PERMANENTLY DESTROY the following infrastructure:"
-          echo "🏗️  Environment: ${{ github.event.inputs.environment }}"
-          echo "🌍 Region: ${{ env.AWS_REGION }}"
-          echo "📦 All resources defined in your Terraform configuration"
-          echo ""
-          echo "🚨 This action CANNOT be undone!"
-          echo ""
-          echo "Proceeding with destruction in 10 seconds..."
-          sleep 10
 
       - name: 💥 Execute Infrastructure Destruction
         run: |
