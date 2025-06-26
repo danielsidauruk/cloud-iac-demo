@@ -57,14 +57,15 @@ jobs:
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
           
-          echo "ecr-registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_ENV
           
           echo "🔨 Building image: $IMAGE_TAG"
 
       - name: 🐳 Build & Push Docker Image
         id: build
         run: |
+          echo $(image-tag)
           cd src/app/main
           
           FULL_IMAGE_TAG="${{ steps.aws-info.outputs.image-tag }}"
