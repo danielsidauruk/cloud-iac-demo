@@ -38,36 +38,6 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      # - name: 📦 Download Main Image Tag
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: main-image-tag
-      #     path: ./src/app/main/
-      #     run-id: ${{ github.event.workflow_run.id }}
-      #   continue-on-error: true
-        
-      # - name: 📦 Download Consumer Image Tag
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: consumer-image-tag
-      #     path: ./src/app/consumer/
-      #     run-id: ${{ github.event.workflow_run.id }}
-      #   continue-on-error: true
-
-      # - name: 🏷️ Get Image Tags
-      #   id: get-tags
-      #   run: |
-      #     ls
-      #     pwd
-      #     MAIN_IMAGE=$(cat ./src/app/main/main-image-tag.txt)
-      #     CONSUMER_IMAGE=$(cat ./src/app/consumer/consumer-image-tag.txt)
-          
-      #     echo "main_image=${MAIN_IMAGE}" >> $GITHUB_OUTPUT
-      #     echo "consumer_image=${CONSUMER_IMAGE}" >> $GITHUB_OUTPUT
-          
-      #     echo "🏷️ Main image: ${MAIN_IMAGE}"
-      #     echo "🏷️ Consumer image: ${CONSUMER_IMAGE}"
-
       - name: ⚙️ Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -78,7 +48,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.BACKEND_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: 📊 Extract Infrastructure Outputs
         id: outputs
