@@ -31,64 +31,42 @@ jobs:
       postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
       rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
       redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
-      main_image: ${{steps.get-tags.outputs.main_image}}
-      consumer_image: ${{steps.get-tags.outputs.consumer_image}}
+      main_image: ${{steps.outputs.outputs.main_image}}
+      # consumer_image: ${{steps.outputs.outputs.consumer_image}}
     
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 📦 Download Main Image Tag
-        uses: actions/download-artifact@v4
-        with:
-          name: main-image-tag
-          path: ./src/app/main/
-          run-id: ${{ github.event.workflow_run.id }}
-        continue-on-error: true
+      # - name: 📦 Download Main Image Tag
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: main-image-tag
+      #     path: ./src/app/main/
+      #     run-id: ${{ github.event.workflow_run.id }}
+      #   continue-on-error: true
         
-      - name: 📦 Download Consumer Image Tag
-        uses: actions/download-artifact@v4
-        with:
-          name: consumer-image-tag
-          path: ./src/app/consumer/
-          run-id: ${{ github.event.workflow_run.id }}
-        continue-on-error: true
+      # - name: 📦 Download Consumer Image Tag
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: consumer-image-tag
+      #     path: ./src/app/consumer/
+      #     run-id: ${{ github.event.workflow_run.id }}
+      #   continue-on-error: true
 
-      - name: 🔍 Debug Artifacts
-        run: |
-          ls
-          sudo apt-get install tree
-          echo $GITHUB_WORKSPACE
-          tree -L 4
-          echo "=== Listing specific main-image-tag.txt file ==="
-          ls -la ./src/app/main/main-image-tag.txt || echo "main-image-tag.txt not found at src/app/main/"
-          echo "=== Content of main-image-tag.txt ==="
-          cat ./src/app/main/main-image-tag.txt || echo "main-image-tag.txt content could not be read"
-          echo ""
-
-          echo "=== Listing specific consumer-image-tag.txt file ==="
-          ls -la ./src/app/consumer/consumer-image-tag.txt || echo "consumer-image-tag.txt not found at src/app/consumer/"
-          echo "=== Content of consumer-image-tag.txt ==="
-          cat ./src/app/consumer/consumer-image-tag.txt || echo "consumer-image-tag.txt content could not be read"
-          echo ""
-
-          pwd
-            echo "--- All files in current directory (repo root) ---"
-          ls -la
-
-      - name: 🏷️ Get Image Tags
-        id: get-tags
-        run: |
-          ls
-          pwd
-          MAIN_IMAGE=$(cat ./src/app/main/main-image-tag.txt)
-          CONSUMER_IMAGE=$(cat ./src/app/consumer/consumer-image-tag.txt)
+      # - name: 🏷️ Get Image Tags
+      #   id: get-tags
+      #   run: |
+      #     ls
+      #     pwd
+      #     MAIN_IMAGE=$(cat ./src/app/main/main-image-tag.txt)
+      #     CONSUMER_IMAGE=$(cat ./src/app/consumer/consumer-image-tag.txt)
           
-          echo "main_image=${MAIN_IMAGE}" >> $GITHUB_OUTPUT
-          echo "consumer_image=${CONSUMER_IMAGE}" >> $GITHUB_OUTPUT
+      #     echo "main_image=${MAIN_IMAGE}" >> $GITHUB_OUTPUT
+      #     echo "consumer_image=${CONSUMER_IMAGE}" >> $GITHUB_OUTPUT
           
-          echo "🏷️ Main image: ${MAIN_IMAGE}"
-          echo "🏷️ Consumer image: ${CONSUMER_IMAGE}"
+      #     echo "🏷️ Main image: ${MAIN_IMAGE}"
+      #     echo "🏷️ Consumer image: ${CONSUMER_IMAGE}"
 
       - name: ⚙️ Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -123,6 +101,10 @@ jobs:
           echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+
+          echo "main_image=${{ github.event.workflow_run.outputs.main_image }}"
+
+          echo $main_image
 
   kubernetes:
     name: ☸️ Deploy to Kubernetes
@@ -162,7 +144,7 @@ jobs:
           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
-          TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
+          # TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
         run: |
            terraform fmt -check
             terraform init \

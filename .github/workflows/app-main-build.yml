@@ -22,8 +22,7 @@ jobs:
       run:
         working-directory: ./src/app/main
     outputs:
-      image-tag: ${{ steps.build.outputs.image-tag }}
-      commit-sha: ${{ github.sha }}
+      main-image: ${{ steps.build.outputs.image-tag }}
     
     steps:
       - name: 📥 Checkout Source Code
@@ -70,28 +69,27 @@ jobs:
           docker build . -t $FULL_IMAGE_TAG
           docker push $FULL_IMAGE_TAG
           
-          echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "$FULL_IMAGE_TAG" > "${GITHUB_WORKSPACE}/main-image-tag.txt"
-          echo ${GITHUB_WORKSPACE}
+          # echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_ENV
           echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
 
-      - name: 📤 Upload Main Image Tag
-        uses: actions/upload-artifact@v4
-        with:
-          name: main-image-tag
-          path: main-image-tag.txt
-          retention-days: 1
+      # - name: 📤 Upload Main Image Tag
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: main-image-tag
+      #     path: main-image-tag.txt
+      #     retention-days: 1
 
-      - name: 🚀 Trigger Deploy
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.GHP_TOKEN }}
-          event-type: deploy-ready
-          client-payload: |
-            {
-              "app": "main",
-              "run_id": "${{ github.run_id }}"
-            }
+      # - name: 🚀 Trigger Deploy
+      #   uses: peter-evans/repository-dispatch@v3
+      #   with:
+      #     token: ${{ secrets.GHP_TOKEN }}
+      #     event-type: deploy-ready
+      #     client-payload: |
+      #       {
+      #         "app": "main",
+      #         "run_id": "${{ github.run_id }}"
+      #       }
 
       - name: 📋 Build Summary
         run: |
