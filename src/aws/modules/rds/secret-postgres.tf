@@ -5,7 +5,7 @@ resource "random_password" "database_connection_string" {
 }
 
 resource "aws_secretsmanager_secret" "database_connection_string" {
-  name                    = "${var.application_name}-${var.environment_name}-connection-string-test-39"
+  name                    = "${var.application_name}-${var.environment_name}-connection-string-test-40"
   description             = "Database connection string"
   recovery_window_in_days = 7
 
