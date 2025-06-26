@@ -58,7 +58,7 @@ jobs:
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.CONSUMER_REPOSITORY }}:${SHORT_SHA}"
-          
+
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "🔨 Building image: $IMAGE_TAG"
 
@@ -66,21 +66,19 @@ jobs:
         id: build
         run: |
           FULL_IMAGE_TAG="${{ steps.aws-info.outputs.image-tag }}"
-          
+
           docker build . -t $FULL_IMAGE_TAG
           docker push $FULL_IMAGE_TAG
-          
+
           echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "$FULL_IMAGE_TAG" > consumer-image-tag.txt
+          echo "$FULL_IMAGE_TAG" > consumer-image-tag.txt # File created in ./src/app/consumer/
           echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
 
-          ls
-          
       - name: 📤 Upload Consumer Image Tag
         uses: actions/upload-artifact@v4
         with:
           name: consumer-image-tag
-          path: consumer-image-tag.txt
+          path: ./src/app/consumer/consumer-image-tag.txt
           retention-days: 1
 
       - name: 🚀 Trigger Deploy
