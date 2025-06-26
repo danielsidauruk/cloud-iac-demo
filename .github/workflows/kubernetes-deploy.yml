@@ -7,6 +7,7 @@ on:
   workflow_run:
     workflows: ["📦 App Main Build", "📦 App Consumer Build"]
     types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -51,11 +52,31 @@ jobs:
           path: ./artifacts/
         continue-on-error: true
 
+      - name: 🔍 Debug Artifacts
+        run: |
+          ls
+          echo "=== Listing all files in artifacts directory ==="
+          ls -la ./artifacts/
+          echo ""
+          echo "=== Recursive listing of artifacts ==="
+          find ./artifacts/ -type f -exec ls -la {} \;
+          echo ""
+          echo "=== Content of all text files ==="
+          find ./artifacts/ -name "*.txt" -exec echo "File: {}" \; -exec cat {} \; -exec echo "" \;
+          echo ""
+          echo "=== Current working directory ==="
+          pwd
+          echo ""
+          echo "=== All files in current directory ==="
+          ls -la
+
       - name: 🏷️ Get Image Tags
         id: get-tags
         run: |
-          MAIN_IMAGE=$(cat ./artifacts/src/app/main/main-image-tag.txt)
-          CONSUMER_IMAGE=$(cat ./artifacts/src/app/consumer/consumer-image-tag.txt)
+          ls
+          pwd
+          MAIN_IMAGE=$(cat ./src/app/main/main-image-tag.txt)
+          CONSUMER_IMAGE=$(cat ./src/app/consumer/consumer-image-tag.txt)
           
           echo "main_image=${MAIN_IMAGE}" >> $GITHUB_OUTPUT
           echo "consumer_image=${CONSUMER_IMAGE}" >> $GITHUB_OUTPUT
