@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: /package-lock.json
+          cache-dependency-path: src/app/consumer/package-lock.json
 
       - name: 📚 Install Dependencies & Run Tests
         run: |
