@@ -50,4 +50,6 @@ jobs:
         run: terraform validate
 
       - name: 📋 Generate Infrastructure Plan
-        run: terraform plan -var-file="terraform.tfvars"
+        run: |
+          terraform apply -auto-approve -target=module.vpc.random_shuffle.az
+          terraform plan
