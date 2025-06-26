@@ -42,14 +42,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: main-image-tag
-          path: ./artifacts/
+          path: ./artifacts/main-image-tag/
         continue-on-error: true
         
       - name: 📦 Download Consumer Image Tag
         uses: actions/download-artifact@v4
         with:
           name: consumer-image-tag
-          path: ./artifacts/
+          path: ./artifacts/consumer-image-tag/
         continue-on-error: true
 
       - name: 🔍 Debug Artifacts
