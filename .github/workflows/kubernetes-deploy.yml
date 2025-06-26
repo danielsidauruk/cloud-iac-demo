@@ -60,19 +60,20 @@ jobs:
           sudo apt-get install tree
           echo $GITHUB_WORKSPACE
           tree -L 4
-          echo "=== Listing all files in main-image-tag directory ==="
-          ls -la 
+          echo "=== Listing specific main-image-tag.txt file ==="
+          ls -la ./src/app/main/main-image-tag.txt || echo "main-image-tag.txt not found at src/app/main/"
+          echo "=== Content of main-image-tag.txt ==="
+          cat ./src/app/main/main-image-tag.txt || echo "main-image-tag.txt content could not be read"
           echo ""
-          echo "=== Recursive listing of main-image-tag ==="
-          find ./main-image-tag/ -type f -exec ls -la {} \;
+
+          echo "=== Listing specific consumer-image-tag.txt file ==="
+          ls -la ./src/app/consumer/consumer-image-tag.txt || echo "consumer-image-tag.txt not found at src/app/consumer/"
+          echo "=== Content of consumer-image-tag.txt ==="
+          cat ./src/app/consumer/consumer-image-tag.txt || echo "consumer-image-tag.txt content could not be read"
           echo ""
-          echo "=== Content of all text files ==="
-          find ./main-image-tag/ -name "*.txt" -exec echo "File: {}" \; -exec cat {} \; -exec echo "" \;
-          echo ""
-          echo "=== Current working directory ==="
+
           pwd
-          echo ""
-          echo "=== All files in current directory ==="
+            echo "--- All files in current directory (repo root) ---"
           ls -la
 
       - name: 🏷️ Get Image Tags
