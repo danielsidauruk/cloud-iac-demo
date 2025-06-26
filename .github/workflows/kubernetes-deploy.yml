@@ -42,7 +42,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: main-image-tag
-          path: ./artifacts/main-image-tag/
+          path: ./main-image-tag/
           run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
         
@@ -50,7 +50,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: consumer-image-tag
-          path: ./artifacts/consumer-image-tag/
+          path: ./consumer-image-tag/
           run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
 
