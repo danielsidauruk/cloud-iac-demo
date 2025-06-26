@@ -71,14 +71,14 @@ jobs:
           docker push $FULL_IMAGE_TAG
 
           echo "image-tag=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "$FULL_IMAGE_TAG" > consumer-image-tag.txt
+          echo "$FULL_IMAGE_TAG" > "${GITHUB_WORKSPACE}/consumer-image-tag.txt
           echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
 
       - name: 📤 Upload Consumer Image Tag
         uses: actions/upload-artifact@v4
         with:
           name: consumer-image-tag
-          path: ./src/app/consumer/consumer-image-tag.txt
+          path: consumer-image-tag.txt
           retention-days: 1
 
       - name: 🚀 Trigger Deploy
