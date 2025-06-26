@@ -18,6 +18,9 @@ jobs:
     name: 🏗️ Build & Push Main App
     runs-on: ubuntu-latest
     environment: dev
+    defaults:
+      run:
+        working-directory: ./src/app/main
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
       commit-sha: ${{ github.sha }}
@@ -31,11 +34,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: src/app/main/package-lock.json
+          cache-dependency-path: /package-lock.json
 
       - name: 📚 Install Dependencies & Run Tests
         run: |
-          cd src/app/main
           npm ci
           npm test || echo "⚠️ No tests found - skipping"
 
@@ -63,8 +65,6 @@ jobs:
       - name: 🐳 Build & Push Docker Image
         id: build
         run: |
-          cd src/app/main
-          
           FULL_IMAGE_TAG="${{ steps.aws-info.outputs.image-tag }}"
           
           docker build . -t $FULL_IMAGE_TAG
@@ -78,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: main-image-tag
-          path: ./main-image-tag.txt
+          path: main-image-tag.txt
           retention-days: 1
 
       - name: 🚀 Trigger Deploy
