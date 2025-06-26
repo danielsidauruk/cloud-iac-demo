@@ -122,6 +122,11 @@ jobs:
               -backend-config="key=${{ vars.TF_BACKEND_KEY }}" \
               -backend-config="region=${{ vars.TF_BACKEND_REGION }}"
             terraform validate
+
+            echo $TF_VAR_main_image
+
+            terraform apply -auto-approve -target=helm_release.csi_secrets_store
+            terraform apply -auto-approve
       
       - name: 🛠️ Setup eksctl CLI Tool
         run: |
