@@ -376,30 +376,30 @@ jobs:
             const imageTag = fs.readFileSync(path.join(extractPath, 'consumer_image_tag.txt'), 'utf8').trim();
             core.setOutput('consumer_image', imageTag); # Set this as an output of this step
             console.log(`Consumer Image Tag from artifact: ${imageTag}`);
-
-
-            - name: 📊 Extract Terraform Infrastructure Outputs
-            id: terraform_outputs # Renamed ID for clarity
-            working-directory: ./src/aws
-            run: |
-              terraform init \
-                  -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
-                  -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
-                  -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
-                  -backend-config="encrypt=true"
+        
+      - name: 📊 Extract Terraform Infrastructure Outputs
+        id: terraform_outputs # Renamed ID for clarity
+        working-directory: ./src/aws
+        run: |
+            terraform init \
+                -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+                -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+                -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
+                -backend-config="encrypt=true"
     
-              echo "application_name=$(terraform output -raw application_name)" >> "$GITHUB_OUTPUT"
-              echo "environment_name=$(terraform output -raw environment_name)" >> "$GITHUB_OUTPUT"
-              echo "primary_region=$(terraform output -raw primary_region)" >> "$GITHUB_OUTPUT"
-              echo "kubernetes_cluster_name=$(terraform output -raw kubernetes_cluster_name)" >> "$GITHUB_OUTPUT"
-              echo "kubernetes_namespace=$(terraform output -raw kubernetes_namespace)" >> "$GITHUB_OUTPUT"
-              echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
-              echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
-              echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
-              echo "bucket_name=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
-              echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
-              echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
-              echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+            echo "application_name=$(terraform output -raw application_name)" >> "$GITHUB_OUTPUT"
+            echo "environment_name=$(terraform output -raw environment_name)" >> "$GITHUB_OUTPUT"
+            echo "primary_region=$(terraform output -raw primary_region)" >> "$GITHUB_OUTPUT"
+            echo "kubernetes_cluster_name=$(terraform output -raw kubernetes_cluster_name)" >> "$GITHUB_OUTPUT"
+            echo "kubernetes_namespace=$(terraform output -raw kubernetes_namespace)" >> "$GITHUB_OUTPUT"
+            echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
+            echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
+            echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
+            echo "bucket_name=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
+            echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
+            echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
+            echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+
   kubernetes:
     name: ☸️ Deploy to Kubernetes
     runs-on: ubuntu-latest
