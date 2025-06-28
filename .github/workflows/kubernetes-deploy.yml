@@ -9,6 +9,8 @@ on:
     types: [completed]
     branches: [main]
   workflow_dispatch:
+  repository_dispatch:
+    types: [app-main-event]
 
 env:
   TF_VERSION: '1.5.0'
@@ -49,6 +51,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get value from build Workflow
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.client_payload.ref }}
+      - run: echo ${{ github.event.client_payload.sha }}
+      - run: echo ${{ github.event.client_payload.main_image }}
 
       - name: 📊 Extract Infrastructure Outputs
         id: outputs
@@ -130,8 +139,8 @@ jobs:
 
             echo "main_image: $TF_VAR_main_image"
 
-            terraform apply -auto-approve -target=helm_release.csi_secrets_store
-            terraform apply -auto-approve
+            # terraform apply -auto-approve -target=helm_release.csi_secrets_store
+            # terraform apply -auto-approve
       
       - name: 🛠️ Setup eksctl CLI Tool
         run: |

@@ -72,6 +72,13 @@ jobs:
           echo "main_image=$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "🚀 Successfully pushed: $IMAGE_TAG"
 
+      - name: Pass the Final Image Tag
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GHP_TOKEN }}
+          event-type: app-main-event
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", main_image: ${{ steps.build.outputs.main_image }}'
+
       - name: 📋 Build Summary
         run: |
           echo "🎉 Build completed successfully!"
