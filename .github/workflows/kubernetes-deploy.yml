@@ -1,16 +1,198 @@
+# name: ☸️ Kubernetes Deployment
+
+# on:
+#   push:
+#     branches: [main]
+#     paths: ['src/kubernetes/**']
+#   workflow_dispatch:
+#   repository_dispatch:
+#     types: [app-main-event, app-consumer-event]
+#   # workflow_run:
+#   #   workflows: ["📦 App Main Build", "📦 App Consumer Build"]
+#   #   types: [completed]
+#   #   branches: [main]
+
+# env:
+#   TF_VERSION: '1.5.0'
+
+# jobs:
+#   infra-outputs:
+#     name: 📤 Get Infrastructure Outputs
+#     runs-on: ubuntu-latest
+#     environment: dev
+#     outputs:
+#       application_name: ${{ steps.outputs.outputs.application_name }}
+#       environment_name: ${{ steps.outputs.outputs.environment_name }}
+#       primary_region: ${{ steps.outputs.outputs.primary_region }}
+#       kubernetes_cluster_name: ${{ steps.outputs.outputs.kubernetes_cluster_name }}
+#       kubernetes_namespace: ${{ steps.outputs.outputs.kubernetes_namespace }}
+#       kubernetes_service_account_name: ${{ steps.outputs.outputs.kubernetes_service_account_name }}
+#       alb_controller_role: ${{ steps.outputs.outputs.alb_controller_role }}
+#       workload_identity_role: ${{ steps.outputs.outputs.workload_identity_role }}
+#       bucket_name: ${{ steps.outputs.outputs.bucket_name }}
+#       postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
+#       rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
+#       redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
+#       main_image: ${{steps.outputs.outputs.main_image}}
+#       consumer_image: ${{steps.outputs.outputs.consumer_image}}
+    
+#     steps:
+#       - name: 📥 Checkout Repository
+#         uses: actions/checkout@v4
+
+#       - name: ⚙️ Setup Terraform
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: ${{ env.TF_VERSION }}
+
+#       - name: 🔐 Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ vars.AWS_REGION }}
+
+#       - name: Get Image Tags (from client_payload)
+#         id: get_images
+#         run: |
+#           # Initialize outputs to empty
+#           echo "main_image=" >> "$GITHUB_OUTPUT"
+#           echo "consumer_image=" >> "$GITHUB_OUTPUT"
+  
+#           # Check if the trigger was repository_dispatch and extract payload
+#           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+#             echo "Workflow triggered by repository_dispatch. Event type: ${{ github.event.action }}"
+#             if [[ "${{ github.event.action }}" == "app-main-event" ]]; then
+#               echo "main_image=${{ github.event.client_payload.main_image }}" >> "$GITHUB_OUTPUT"
+#               echo "Received main_image: ${{ github.event.client_payload.main_image }}"
+#             elif [[ "${{ github.event.action }}" == "app-consumer-event" ]]; then
+#               echo "consumer_image=${{ github.event.client_payload.consumer_image }}" >> "$GITHUB_OUTPUT"
+#               echo "Received consumer_image: ${{ github.event.client_payload.consumer_image }}"
+#             else
+#               echo "Unknown repository_dispatch event type."
+#             fi
+#           else
+#             echo "Workflow not triggered by repository_dispatch. client_payload not available."
+#           fi
+
+#       - name: 📊 Extract Infrastructure Outputs
+#         id: outputs
+#         working-directory: ./src/aws
+#         run: |
+#           echo "main_image=${{ github.event.workflow_run.outputs.main_image }}" >> "$GITHUB_OUTPUT"
+#           echo "consumer_image=${{ github.event.workflow_run.outputs.consumer_image }}" >> "$GITHUB_OUTPUT"
+
+#           echo "main_image: $main_image"
+#           echo "consumer_image: $consumer_image"
+
+#           terraform init \
+#               -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+#               -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+#               -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
+#               -backend-config="encrypt=true"
+
+#           echo "application_name=$(terraform output -raw application_name)" >> "$GITHUB_OUTPUT"
+#           echo "environment_name=$(terraform output -raw environment_name)" >> "$GITHUB_OUTPUT"
+#           echo "primary_region=$(terraform output -raw primary_region)" >> "$GITHUB_OUTPUT"
+#           echo "kubernetes_cluster_name=$(terraform output -raw kubernetes_cluster_name)" >> "$GITHUB_OUTPUT"
+#           echo "kubernetes_namespace=$(terraform output -raw kubernetes_namespace)" >> "$GITHUB_OUTPUT"
+#           echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
+#           echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
+#           echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
+#           echo "bucket_name=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
+#           echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
+#           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
+#           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+
+
+#   kubernetes:
+#     name: ☸️ Deploy to Kubernetes
+#     runs-on: ubuntu-latest
+#     needs: infra-outputs
+#     environment: dev
+    
+#     steps:
+#       - name: 📥 Checkout Repository
+#         uses: actions/checkout@v4
+
+#       - name: ⚙️ Setup Terraform
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: ${{ env.TF_VERSION }}
+
+#       - name: 🔐 Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ vars.TF_BACKEND_REGION }}
+
+#       - name: 🔧 Initialize Terraform for Kubernetes
+#         working-directory: ./src/kubernetes
+#         env:
+#           TF_VAR_application_name: ${{ needs.infra-outputs.outputs.application_name }}
+#           TF_VAR_environment_name: ${{ needs.infra-outputs.outputs.environment_name }}
+#           TF_VAR_primary_region: ${{ needs.infra-outputs.outputs.primary_region }}
+#           TF_VAR_kubernetes_cluster_name: ${{ needs.infra-outputs.outputs.kubernetes_cluster_name }}
+#           TF_VAR_kubernetes_namespace: ${{ needs.infra-outputs.outputs.kubernetes_namespace }}
+#           TF_VAR_kubernetes_service_account_name: ${{ needs.infra-outputs.outputs.kubernetes_service_account_name }}
+#           TF_VAR_alb_controller_role: ${{ needs.infra-outputs.outputs.alb_controller_role }}
+#           TF_VAR_workload_identity_role: ${{ needs.infra-outputs.outputs.workload_identity_role }}
+#           TF_VAR_bucket_name: ${{ needs.infra-outputs.outputs.bucket_name }}
+#           TF_VAR_postgres_host_endpoint: ${{ needs.infra-outputs.outputs.postgres_host_endpoint }}
+#           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
+#           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
+#           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
+#           # TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
+#         run: |
+#            terraform fmt -check
+#            terraform init \
+#               -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+#               -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+#               -backend-config="key=${{ vars.TF_KUBERNETES_BACKEND_KEY }}" \
+#               -backend-config="encrypt=true"
+#             terraform validate
+
+#             echo "main_image: $TF_VAR_main_image"
+
+#             # terraform apply -auto-approve -target=helm_release.csi_secrets_store
+#             # terraform apply -auto-approve
+      
+#       - name: 🛠️ Setup eksctl CLI Tool
+#         run: |
+#           # Set ARCH to the appropriate value if running on a different architecture
+#           ARCH=amd64
+#           PLATFORM=$(uname -s)_$ARCH
+
+#           # Download eksctl
+#           curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+
+#           # Optionally verify checksum
+#           curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+
+#           # Extract and move to a location in PATH
+#           tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp
+#           sudo mv /tmp/eksctl /usr/local/bin
+#           rm eksctl_$PLATFORM.tar.gz
+
+#           # Verify installation
+#           eksctl version
+
 name: ☸️ Kubernetes Deployment
 
 on:
   push:
     branches: [main]
     paths: ['src/kubernetes/**']
-  workflow_dispatch:
-  repository_dispatch:
-    types: [app-main-event, app-consumer-event]
-  # workflow_run:
-  #   workflows: ["📦 App Main Build", "📦 App Consumer Build"]
-  #   types: [completed]
-  #   branches: [main]
+  workflow_run: # Re-enabled this trigger
+    workflows: ["📦 App Main Build", "📦 App Consumer Build"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch: # Allows manual triggering
+
+# Removed repository_dispatch trigger as it's no longer used for image tag passing
+# repository_dispatch:
+#   types: [app-main-event, app-consumer-event]
 
 env:
   TF_VERSION: '1.5.0'
@@ -21,20 +203,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     outputs:
-      application_name: ${{ steps.outputs.outputs.application_name }}
-      environment_name: ${{ steps.outputs.outputs.environment_name }}
-      primary_region: ${{ steps.outputs.outputs.primary_region }}
-      kubernetes_cluster_name: ${{ steps.outputs.outputs.kubernetes_cluster_name }}
-      kubernetes_namespace: ${{ steps.outputs.outputs.kubernetes_namespace }}
-      kubernetes_service_account_name: ${{ steps.outputs.outputs.kubernetes_service_account_name }}
-      alb_controller_role: ${{ steps.outputs.outputs.alb_controller_role }}
-      workload_identity_role: ${{ steps.outputs.outputs.workload_identity_role }}
-      bucket_name: ${{ steps.outputs.outputs.bucket_name }}
-      postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
-      rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
-      redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
-      main_image: ${{steps.outputs.outputs.main_image}}
-      consumer_image: ${{steps.outputs.outputs.consumer_image}}
+      application_name: ${{ steps.terraform_outputs.outputs.application_name }}
+      environment_name: ${{ steps.terraform_outputs.outputs.environment_name }}
+      primary_region: ${{ steps.terraform_outputs.outputs.primary_region }}
+      kubernetes_cluster_name: ${{ steps.terraform_outputs.outputs.kubernetes_cluster_name }}
+      kubernetes_namespace: ${{ steps.terraform_outputs.outputs.kubernetes_namespace }}
+      kubernetes_service_account_name: ${{ steps.terraform_outputs.outputs.kubernetes_service_account_name }}
+      alb_controller_role: ${{ steps.terraform_outputs.outputs.alb_controller_role }}
+      workload_identity_role: ${{ steps.terraform_outputs.outputs.workload_identity_role }}
+      bucket_name: ${{ steps.terraform_outputs.outputs.bucket_name }}
+      postgres_host_endpoint: ${{ steps.terraform_outputs.outputs.postgres_host_endpoint }}
+      rabbitmq_host_endpoint: ${{ steps.terraform_outputs.outputs.rabbitmq_host_endpoint }}
+      redis_host_endpoint: ${{ steps.terraform_outputs.outputs.redis_host_endpoint }}
+      main_image: ${{ steps.get_main_image_artifact.outputs.main_image }} # Sourced from artifact download step
+      consumer_image: ${{ steps.get_consumer_image_artifact.outputs.consumer_image }} # Sourced from artifact download step
     
     steps:
       - name: 📥 Checkout Repository
@@ -52,39 +234,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Get Image Tags (from client_payload)
-        id: get_images
-        run: |
-          # Initialize outputs to empty
-          echo "main_image=" >> "$GITHUB_OUTPUT"
-          echo "consumer_image=" >> "$GITHUB_OUTPUT"
-  
-          # Check if the trigger was repository_dispatch and extract payload
-          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
-            echo "Workflow triggered by repository_dispatch. Event type: ${{ github.event.action }}"
-            if [[ "${{ github.event.action }}" == "app-main-event" ]]; then
-              echo "main_image=${{ github.event.client_payload.main_image }}" >> "$GITHUB_OUTPUT"
-              echo "Received main_image: ${{ github.event.client_payload.main_image }}"
-            elif [[ "${{ github.event.action }}" == "app-consumer-event" ]]; then
-              echo "consumer_image=${{ github.event.client_payload.consumer_image }}" >> "$GITHUB_OUTPUT"
-              echo "Received consumer_image: ${{ github.event.client_payload.consumer_image }}"
-            else
-              echo "Unknown repository_dispatch event type."
-            fi
-          else
-            echo "Workflow not triggered by repository_dispatch. client_payload not available."
-          fi
+      # Removed the "Get Image Tags (from client_payload)" step
+      # as it relies on repository_dispatch and does not persist values for workflow_dispatch.
+      # - name: Get Image Tags (from client_payload)
+      #   id: get_images
+      #   run: |
+      #     # ... (removed content) ...
 
-      - name: 📊 Extract Infrastructure Outputs
-        id: outputs
+      - name: 📊 Extract Terraform Infrastructure Outputs
+        id: terraform_outputs # Renamed ID for clarity
         working-directory: ./src/aws
         run: |
-          echo "main_image=${{ github.event.workflow_run.outputs.main_image }}" >> "$GITHUB_OUTPUT"
-          echo "consumer_image=${{ github.event.workflow_run.outputs.consumer_image }}" >> "$GITHUB_OUTPUT"
-
-          echo "main_image: $main_image"
-          echo "consumer_image: $consumer_image"
-
           terraform init \
               -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
               -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
@@ -104,11 +264,153 @@ jobs:
           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
 
+      # --- Steps to download and extract image tags from artifacts ---
+      - name: ⬇️ Download Main Image Tag Artifact
+        id: get_main_image_artifact
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const workflow_id = 'App Main Build.yml'; // Exact filename of your App Main Build workflow
+            const branch = 'main'; // The branch for the successful workflow run
+            const artifact_name = 'main-image-tag';
+
+            // Find the latest successful workflow run for 'App Main Build'
+            const runs = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              workflow_id,
+              branch,
+              status: 'success',
+              per_page: 1
+            });
+
+            if (runs.data.workflow_runs.length === 0) {
+              console.warn(`No successful runs found for workflow '${workflow_id}' on branch '${branch}'. Cannot retrieve main image tag.`);
+              core.setOutput('main_image', ''); // Set to empty string if not found
+              return;
+            }
+
+            const latest_run_id = runs.data.workflow_runs[0].id;
+
+            // List artifacts for that specific workflow run
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner,
+              repo,
+              run_id: latest_run_id
+            });
+
+            const artifact = artifacts.data.artifacts.find(art => art.name === artifact_name);
+
+            if (!artifact) {
+              console.warn(`Artifact '${artifact_name}' not found in run ${latest_run_id} for workflow '${workflow_id}'.`);
+              core.setOutput('main_image', ''); // Set to empty string if not found
+              return;
+            }
+
+            // Download the artifact (it comes as a zip file)
+            const fs = require('fs');
+            const path = require('path');
+            const extract = require('extract-zip');
+            
+            const zipFilePath = path.join(process.env.RUNNER_TEMP, `${artifact_name}.zip`);
+            try {
+              const download = await github.rest.actions.downloadArtifact({
+                owner,
+                repo,
+                artifact_id: artifact.id,
+                archive_format: 'zip'
+              });
+              fs.writeFileSync(zipFilePath, Buffer.from(download.data));
+            } catch (error) {
+              console.error(`Failed to download artifact ${artifact_name}: ${error.message}`);
+              core.setOutput('main_image', '');
+              return;
+            }
+
+            const extractPath = path.join(process.env.GITHUB_WORKSPACE, 'main_image_artifact_dir');
+            await extract(zipFilePath, { dir: extractPath });
+
+            // Read the image tag from the extracted file
+            const imageTag = fs.readFileSync(path.join(extractPath, 'main_image_tag.txt'), 'utf8').trim();
+            core.setOutput('main_image', imageTag); # Set this as an output of this step
+            console.log(`Main Image Tag from artifact: ${imageTag}`);
+
+      - name: ⬇️ Download Consumer Image Tag Artifact
+        id: get_consumer_image_artifact
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const workflow_id = 'App Consumer Build.yml'; # Exact filename of your App Consumer Build workflow
+            const branch = 'main'; # The branch for the successful workflow run
+            const artifact_name = 'consumer-image-tag';
+
+            // Find the latest successful workflow run for 'App Consumer Build'
+            const runs = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              workflow_id,
+              branch,
+              status: 'success',
+              per_page: 1
+            });
+
+            if (runs.data.workflow_runs.length === 0) {
+              console.warn(`No successful runs found for workflow '${workflow_id}' on branch '${branch}'. Cannot retrieve consumer image tag.`);
+              core.setOutput('consumer_image', ''); # Set to empty string if not found
+              return;
+            }
+
+            const latest_run_id = runs.data.workflow_runs[0].id;
+
+            // List artifacts for that specific workflow run
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner,
+              repo,
+              run_id: latest_run_id
+            });
+
+            const artifact = artifacts.data.artifacts.find(art => art.name === artifact_name);
+
+            if (!artifact) {
+              console.warn(`Artifact '${artifact_name}' not found in run ${latest_run_id} for workflow '${workflow_id}'.`);
+              core.setOutput('consumer_image', ''); # Set to empty string if not found
+              return;
+            }
+
+            // Download the artifact (it comes as a zip file)
+            const fs = require('fs');
+            const path = require('path');
+            const extract = require('extract-zip');
+            
+            const zipFilePath = path.join(process.env.RUNNER_TEMP, `${artifact_name}.zip`);
+            try {
+              const download = await github.rest.actions.downloadArtifact({
+                owner,
+                repo,
+                artifact_id: artifact.id,
+                archive_format: 'zip'
+              });
+              fs.writeFileSync(zipFilePath, Buffer.from(download.data));
+            } catch (error) {
+              console.error(`Failed to download artifact ${artifact_name}: ${error.message}`);
+              core.setOutput('consumer_image', '');
+              return;
+            }
+
+            const extractPath = path.join(process.env.GITHUB_WORKSPACE, 'consumer_image_artifact_dir');
+            await extract(zipFilePath, { dir: extractPath });
+
+            // Read the image tag from the extracted file
+            const imageTag = fs.readFileSync(path.join(extractPath, 'consumer_image_tag.txt'), 'utf8').trim();
+            core.setOutput('consumer_image', imageTag); # Set this as an output of this step
+            console.log(`Consumer Image Tag from artifact: ${imageTag}`);
 
   kubernetes:
     name: ☸️ Deploy to Kubernetes
     runs-on: ubuntu-latest
-    needs: infra-outputs
+    needs: infra-outputs # This ensures infra-outputs completes first
     environment: dev
     
     steps:
@@ -143,37 +445,29 @@ jobs:
           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
-          # TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
+          TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }} # This should now be populated
         run: |
-           terraform fmt -check
-           terraform init \
-              -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
-              -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
-              -backend-config="key=${{ vars.TF_KUBERNETES_BACKEND_KEY }}" \
-              -backend-config="encrypt=true"
-            terraform validate
+          terraform fmt -check
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+            -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+            -backend-config="key=${{ vars.TF_KUBERNETES_BACKEND_KEY }}" \
+            -backend-config="encrypt=true"
+          terraform validate
 
-            echo "main_image: $TF_VAR_main_image"
-
-            # terraform apply -auto-approve -target=helm_release.csi_secrets_store
-            # terraform apply -auto-approve
+          echo "main_image: $TF_VAR_main_image"
+          echo "consumer_image: $TF_VAR_consumer_image"
+          
+          # terraform apply -auto-approve -target=helm_release.csi_secrets_store
+          # terraform apply -auto-approve
       
       - name: 🛠️ Setup eksctl CLI Tool
         run: |
-          # Set ARCH to the appropriate value if running on a different architecture
           ARCH=amd64
           PLATFORM=$(uname -s)_$ARCH
-
-          # Download eksctl
           curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
-
-          # Optionally verify checksum
           curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
-
-          # Extract and move to a location in PATH
           tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
           rm eksctl_$PLATFORM.tar.gz
-
-          # Verify installation
           eksctl version
