@@ -77,7 +77,7 @@ jobs:
         with:
           token: ${{ secrets.GHP_TOKEN }}
           event-type: app-main-event
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "main_image": "${{ steps.build.outputs.main_image }}"'
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "main_image": "${{ steps.build.outputs.main_image }}"}'
 
       - name: 📋 Build Summary
         run: |
