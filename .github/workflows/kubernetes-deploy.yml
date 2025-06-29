@@ -1,4 +1,4 @@
-name: ☸️ Kubernetes Deployment
+name: 🚀 Kubernetes Deployment
 
 on:
   push:
@@ -34,8 +34,8 @@ jobs:
       postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
       rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
       redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
-      main_image: ${{ steps.determine_images.outputs.main_image }}
-      consumer_image: ${{ steps.determine_images.outputs.consumer_image }}
+      main_image: ${{ steps.get_images.outputs.main_image }}
+      consumer_image: ${{ steps.get_images.outputs.consumer_image }}
 
     steps:
       - name: 📥 Checkout Repository
@@ -53,45 +53,36 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Get Image Tags from Event or ECR
-        id: determine_images
+      - name: 🔍 Get Image Tags from Event or ECR
+        id: get_images
         run: |
-          set +e
           MAIN_IMAGE_FROM_EVENT=""
           CONSUMER_IMAGE_FROM_EVENT=""
-          LATEST_MAIN_IMAGE=""
-          LATEST_CONSUMER_IMAGE=""
 
           REGISTRY_ID=$(aws sts get-caller-identity --query Account --output text)
-          REGION=$(aws configure get region)
+          REGION=${{ vars.AWS_REGION }}
           MAIN_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-${{ vars.MAIN_REPOSITORY }}"
           CONSUMER_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-${{ vars.CONSUMER_REPOSITORY }}"
 
           LATEST_MAIN_IMAGE=$(aws ecr describe-images \
-            --repository-name $MAIN_REPO\
+            --repository-name $MAIN_REPO \
             --filter tagStatus=TAGGED \
             --query "sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0] | join('', ['${REGISTRY_ID}.dkr.ecr.${REGION}.amazonaws.com/', '${MAIN_REPO}:', @])" \
             --output text)
 
           LATEST_CONSUMER_IMAGE=$(aws ecr describe-images \
-            --repository-name $CONSUMER_REPO\
+            --repository-name $CONSUMER_REPO \
             --filter tagStatus=TAGGED \
             --query "sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0] | join('', ['${REGISTRY_ID}.dkr.ecr.${REGION}.amazonaws.com/', '${CONSUMER_REPO}:', @])" \
             --output text)
           
-
-          # --- Extract image tags from repository_dispatch event ---
-          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
-            if [[ "${{ github.event.action }}" == ${{ env.MAIN_EVENT_TYPE }} ]]; then
-              # Using 'main_image' from client_payload as defined in the build workflow
-              MAIN_IMAGE_FROM_EVENT="${{ github.event.client_payload.main_image }}" 
-            elif [[ "${{ github.event.action }}" == ${{ env.CONSUMER_EVENT_TYPE }} ]]; then
-              # Assuming consumer payload key is still 'consumer_image'
-              CONSUMER_IMAGE_FROM_EVENT="${{ github.event.client_payload.consumer_image }}"
-            fi
+          if [[ "${{ github.event.action }}" == ${{ env.MAIN_EVENT_TYPE }} ]]; then
+            MAIN_IMAGE_FROM_EVENT="${{ github.event.client_payload.main_image }}" 
+          elif [[ "${{ github.event.action }}" == ${{ env.CONSUMER_EVENT_TYPE }} ]]; then
+            CONSUMER_IMAGE_FROM_EVENT="${{ github.event.client_payload.consumer_image }}"
           fi
 
-          # --- Determine final main_image ---
+          # Determine final main_image
           if [[ -n "$MAIN_IMAGE_FROM_EVENT" && "$MAIN_IMAGE_FROM_EVENT" != "$LATEST_MAIN_IMAGE" ]]; then
             echo "main_image=$MAIN_IMAGE_FROM_EVENT" >> "$GITHUB_OUTPUT"
             echo "main_image from Event (different from ECR): $MAIN_IMAGE_FROM_EVENT"
@@ -100,7 +91,7 @@ jobs:
             echo "main_image from ECR (or event was same as ECR): $LATEST_MAIN_IMAGE"
           fi
 
-          # --- Determine final consumer_image ---
+          # Determine final consumer_image
           if [[ -n "$CONSUMER_IMAGE_FROM_EVENT" && "$CONSUMER_IMAGE_FROM_EVENT" != "$LATEST_CONSUMER_IMAGE" ]]; then
             echo "consumer_image=$CONSUMER_IMAGE_FROM_EVENT" >> "$GITHUB_OUTPUT"
             echo "consumer_image from Event (different from ECR): $CONSUMER_IMAGE_FROM_EVENT"
@@ -108,8 +99,6 @@ jobs:
             echo "consumer_image=$LATEST_CONSUMER_IMAGE" >> "$GITHUB_OUTPUT"
             echo "consumer_image from ECR (or event was same as ECR): $LATEST_CONSUMER_IMAGE"
           fi
-        
-          set -e
 
       - name: 📊 Extract Infrastructure Outputs
         id: outputs
