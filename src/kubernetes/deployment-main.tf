@@ -39,7 +39,7 @@ resource "kubernetes_deployment" "main" {
         }
 
         container {
-          image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.primary_region}.amazonaws.com/ecr-openmusicapi-dev-main:1.0.1"
+          image = var.main_image
           name  = local.application_name
 
           port {

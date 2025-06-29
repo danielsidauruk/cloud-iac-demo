@@ -40,7 +40,7 @@ resource "kubernetes_deployment" "consumer" {
 
 
         container {
-          image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.primary_region}.amazonaws.com/ecr-openmusicapi-dev-consumer:1.0.0"
+          image = var.consumer_image
           name  = local.name
 
           port {

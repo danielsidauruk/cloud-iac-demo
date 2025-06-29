@@ -31,6 +31,18 @@ variable "kubernetes_service_account_name" {
   description = "K8s service account name."
 }
 
+variable "main_image" {
+  type        = string
+  description = "Main's image name"
+  default     = ""
+}
+
+variable "consumer_image" {
+  type        = string
+  description = "Consumer's image name"
+  default     = ""
+}
+
 
 # IAM Roles
 variable "alb_controller_role" {
@@ -54,7 +66,6 @@ variable "username" {
 variable "postgres_dbname" {
   type        = string
   description = "PostgreSQL database name."
-  default     = "openmusicapidb"
 }
 
 variable "bucket_name" {
@@ -77,6 +88,19 @@ variable "redis_host_endpoint" {
   description = "Redis ElastiCache endpoint."
 }
 
+
+# Docker Images
+variable "main_image_tag" {
+  type        = string
+  description = "Main application Docker image tag."
+  default     = "latest"
+}
+
+variable "consumer_image_tag" {
+  type        = string
+  description = "Consumer application Docker image tag."
+  default     = "latest"
+}
 
 # Port Numbers & Protocols
 variable "application_port" {
