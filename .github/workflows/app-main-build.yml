@@ -66,20 +66,24 @@ jobs:
           
           echo "🚀 Successfully pushed: $IMAGE_TAG"
 
-          ehco "main_image=$IMAGE_TAG >> "$GITHUB_OUTPUT"
+          ehco "main_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "main_image_tag=$SHORT_SHA" >> "$GITHUB_OUTPUT"
-
+        
       - name: Pass the Final Image Tag (via repository_dispatch)
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.GHP_TOKEN }}
           event-type: ${{ env.EVENT_TYPE }}
-          client-payload: 
-            '{"ref": "${{ github.ref }}",
-            "sha": "${{ github.sha }}",
-            "main_image_tag": "${{ steps.build.outputs.main_image_tag }}"}'
+          # Corrected client-payload syntax: removed extra closing quote and used multiline YAML for readability
+          client-payload: |
+            {
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}",
+              "main_image_tag": "${{ steps.build.outputs.main_image_tag }}"
+            }
 
       - name: 📋 Build Summary
         run: |
           echo "🎉 Build completed successfully!"
-          echo "📦 Image: ${{ steps.build.outputs.main_image }}"
+          # Corrected output reference to 'main_image_tag'
+          echo "📦 Image: ${{ steps.build.outputs.main_image_tag }}"
