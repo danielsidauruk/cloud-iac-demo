@@ -63,12 +63,9 @@ jobs:
           LATEST_CONSUMER_IMAGE=""
 
           REGISTRY_ID=$(aws sts get-caller-identity --query Account --output text)
+          REGION=$(aws configure get region)
           MAIN_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-${{ vars.MAIN_REPOSITORY }}"
           CONSUMER_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-${{ vars.CONSUMER_REPOSITORY }}"
-
-          echo "MAIN_REPO=$MAIN_REPO"
-          echo "CONSUMER_REPO=$CONSUMER_REPO"
-
 
           LATEST_MAIN_IMAGE=$(aws ecr describe-images \
             --repository-name $MAIN_REPO\
