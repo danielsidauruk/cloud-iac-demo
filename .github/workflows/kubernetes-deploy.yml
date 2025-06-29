@@ -56,6 +56,7 @@ jobs:
       - name: Get Image Tags from Event or ECR
         id: determine_images
         run: |
+          set +e
           MAIN_IMAGE_FROM_EVENT=""
           CONSUMER_IMAGE_FROM_EVENT=""
           LATEST_MAIN_IMAGE=""
@@ -65,6 +66,10 @@ jobs:
           REGION=$(aws configure get region)
           MAIN_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-$REGION"
           CONSUMER_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-$$REGION"
+
+          echo "MAIN_REPO=$MAIN_REPO"
+          echo "CONSUMER_REPO=$CONSUMER_REPO"
+
 
           LATEST_MAIN_IMAGE=$(aws ecr describe-images \
             --repository-name $MAIN_REPO\
@@ -107,6 +112,8 @@ jobs:
             echo "consumer_image=$LATEST_CONSUMER_IMAGE" >> "$GITHUB_OUTPUT"
             echo "consumer_image from ECR (or event was same as ECR): $LATEST_CONSUMER_IMAGE"
           fi
+        
+          set -e
 
       - name: 📊 Extract Infrastructure Outputs
         id: outputs
