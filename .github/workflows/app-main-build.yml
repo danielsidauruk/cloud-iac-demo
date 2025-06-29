@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: src/app/consumer/package-lock.json
+          cache-dependency-path: src/app/main/package-lock.json
 
       - name: 📚 Install Dependencies & Run Tests
         run: |
@@ -54,19 +54,21 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: 🐳 Build & Push Docker Image
-        id: build_and_push
+        id: build 
         run: |
           SHORT_SHA=${GITHUB_SHA:0:7}
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
           
+          echo "🔨 Building and pushing image: $IMAGE_TAG"
+
           docker build . -t $IMAGE_TAG
           docker push $IMAGE_TAG
           
           echo "🚀 Successfully pushed: $IMAGE_TAG"
 
-          ehco "main_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "main_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "main_image_tag=$SHORT_SHA" >> "$GITHUB_OUTPUT"
         
       - name: Pass the Final Image Tag (via repository_dispatch)
@@ -74,7 +76,6 @@ jobs:
         with:
           token: ${{ secrets.GHP_TOKEN }}
           event-type: ${{ env.EVENT_TYPE }}
-          # Corrected client-payload syntax: removed extra closing quote and used multiline YAML for readability
           client-payload: |
             {
               "ref": "${{ github.ref }}",
@@ -85,5 +86,4 @@ jobs:
       - name: 📋 Build Summary
         run: |
           echo "🎉 Build completed successfully!"
-          # Corrected output reference to 'main_image_tag'
-          echo "📦 Image: ${{ steps.build.outputs.main_image_tag }}"
+          echo "📦 Image: ${{ steps.build.outputs.main_image }}"

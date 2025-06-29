@@ -48,6 +48,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: 🔑 Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: 🐳 Build & Push Docker Image
         id: build
         run: |
@@ -56,6 +59,8 @@ jobs:
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.CONSUMER_REPOSITORY }}:${SHORT_SHA}"
           
+          echo "🔨 Building and pushing image: $IMAGE_TAG"
+
           docker build . -t $IMAGE_TAG
           docker push $IMAGE_TAG
           
@@ -76,7 +81,7 @@ jobs:
               "consumer_image_tag": "${{ steps.build.outputs.consumer_image_tag }}"
             }
 
-      - name: 📋 Summary
+      - name: 📋 Build Summary
         run: |
           echo "🎉 Build completed successfully!"
           echo "📦 Image: ${{ steps.build.outputs.consumer_image }}"
