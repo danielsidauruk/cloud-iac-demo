@@ -12,6 +12,7 @@ env:
   ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
   CONSUMER_REPOSITORY: ${{ vars.CONSUMER_REPOSITORY }}
   NODE_VERSION: '20'
+  EVENT_TYPE: "app-consumer-event"
 
 jobs:
   build-and-push:
@@ -22,7 +23,7 @@ jobs:
       run:
         working-directory: ./src/app/consumer
     outputs:
-      consumer_image: ${{ steps.build.outputs.consumer_image }}
+      consumer_image_tag: ${{ steps.build.outputs.consumer_image_tag }}
     
     steps:
       - name: 📥 Checkout Source Code
@@ -47,32 +48,35 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: 🔑 Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: 🏷️ Generate Image Tag & Registry Info
-        id: aws-info
+      - name: 🐳 Build & Push Docker Image
+        id: build
         run: |
           SHORT_SHA=${GITHUB_SHA:0:7}
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.CONSUMER_REPOSITORY }}:${SHORT_SHA}"
 
-          echo "consumer_image=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "🔨 Building image: $IMAGE_TAG"
-
-      - name: 🐳 Build & Push Docker Image
-        id: build
-        run: |
-          FULL_IMAGE_TAG="${{ steps.aws-info.outputs.consumer_image }}"
-
-          docker build . -t $FULL_IMAGE_TAG
-          docker push $FULL_IMAGE_TAG
-
-          echo "consumer_image=$FULL_IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "🚀 Successfully pushed: $FULL_IMAGE_TAG"
+          echo "🔨 Building and pushing image: $IMAGE_TAG"
+          
+          docker build . -t $IMAGE_TAG
+          docker push $IMAGE_TAG
+          
+          echo "🚀 Successfully pushed: $IMAGE_TAG"
+          echo "consumer_image_tag=$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
       - name: 📋 Summary
         run: |
           echo "🎉 Build completed successfully!"
-          echo "📦 Image: ${{ steps.build.outputs.consumer_image }}"
+          echo "📦 Image: ${{ steps.build.outputs.consumer_image_tag }}"
+
+      - name: Pass the Final Image Tag (via repository_dispatch)
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GHP_TOKEN }}
+          event-type: ${{ env.EVENT_TYPE }}
+          client-payload: |
+            {
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}",
+              "consumer_image_tag": "${{ steps.build.outputs.consumer_image_tag }}"
+            }

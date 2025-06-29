@@ -1,98 +1,10 @@
-# name: 📦 App Main Build
-
-# on:
-#   push:
-#     branches: [main]
-#     paths: ['src/app/main/**']
-#   workflow_dispatch:
-
-# env:
-#   AWS_REGION: ${{ vars.AWS_REGION }}
-#   APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
-#   ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
-#   MAIN_REPOSITORY: ${{ vars.MAIN_REPOSITORY }}
-#   NODE_VERSION: '20'
-
-# jobs:
-#   build-and-push:
-#     name: 🏗️ Build & Push Main App
-#     runs-on: ubuntu-latest
-#     permissions:
-#       contents: write 
-#     environment: dev
-#     defaults:
-#       run:
-#         working-directory: ./src/app/main
-#     outputs:
-#       main_image: ${{ steps.build.outputs.main_image }}
-    
-#     steps:
-#       - name: 📥 Checkout Source Code
-#         uses: actions/checkout@v4
-
-#       - name: ⚙️ Setup Node.js Environment
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: ${{ env.NODE_VERSION }}
-#           cache: 'npm'
-#           cache-dependency-path: src/app/consumer/package-lock.json
-
-#       - name: 📚 Install Dependencies & Run Tests
-#         run: |
-#           npm ci
-#           npm test || echo "⚠️ No tests found - skipping"
-
-#       - name: 🔐 Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ env.AWS_REGION }}
-
-#       - name: 🔑 Login to Amazon ECR
-#         uses: aws-actions/amazon-ecr-login@v2
-
-#       - name: 🏷️ Generate Image Tag & Registry Info
-#         id: aws-info
-#         run: |
-#           SHORT_SHA=${GITHUB_SHA:0:7}
-#           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-#           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
-#           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
-          
-#           echo "main_image=$IMAGE_TAG" >> $GITHUB_OUTPUT
-#           echo "🔨 Building image: $IMAGE_TAG"
-
-#       - name: 🐳 Build & Push Docker Image
-#         id: build
-#         run: |
-#           IMAGE_TAG="${{ steps.aws-info.outputs.main_image }}"
-          
-#           docker build . -t $IMAGE_TAG
-#           docker push $IMAGE_TAG
-          
-#           echo "main_image=$IMAGE_TAG" >> $GITHUB_OUTPUT
-#           echo "🚀 Successfully pushed: $IMAGE_TAG"
-
-#       - name: Pass the Final Image Tag (via repository_dispatch)
-#         uses: peter-evans/repository-dispatch@v1
-#         with:
-#           token: ${{ secrets.GHP_TOKEN }}
-#           event-type: app-main-event # This must match the type in kubernetes-deploy.yml
-#           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "main_image": "${{ steps.build.outputs.main_image }}"}'
-
-#       - name: 📋 Build Summary
-#         run: |
-#           echo "🎉 Build completed successfully!"
-#           echo "📦 Image: ${{ steps.build.outputs.main_image }}"
-
 name: 📦 App Main Build
 
 on:
   push:
     branches: [main]
     paths: ['src/app/main/**']
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -100,18 +12,20 @@ env:
   ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
   MAIN_REPOSITORY: ${{ vars.MAIN_REPOSITORY }}
   NODE_VERSION: '20'
+  EVENT_TYPE: "app-main-event"
 
 jobs:
   build-and-push:
     name: 🏗️ Build & Push Main App
     runs-on: ubuntu-latest
+    permissions:
+      contents: write 
     environment: dev
     defaults:
       run:
         working-directory: ./src/app/main
-    # Output the image for direct consumption within this workflow, if needed
     outputs:
-      main_image: ${{ steps.build.outputs.main_image }} 
+      main_image_tag: ${{ steps.build.outputs.main_image_tag }}
     
     steps:
       - name: 📥 Checkout Source Code
@@ -122,7 +36,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: src/app/main/package-lock.json # Corrected path for main app
+          cache-dependency-path: src/app/consumer/package-lock.json
 
       - name: 📚 Install Dependencies & Run Tests
         run: |
@@ -139,49 +53,31 @@ jobs:
       - name: 🔑 Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: 🏷️ Generate Image Tag & Registry Info
-        id: aws-info
+      - name: 🐳 Build & Push Docker Image
+        id: build_and_push
         run: |
           SHORT_SHA=${GITHUB_SHA:0:7}
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
           
-          echo "main_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-          echo "🔨 Generated image tag: $IMAGE_TAG"
-
-      - name: 🐳 Build & Push Docker Image
-        id: build
-        run: |
-          IMAGE_TAG="${{ steps.aws-info.outputs.main_image }}"
+          docker build . -t $IMAGE_TAG
+          docker push $IMAGE_TAG
           
-          docker build . -t "$IMAGE_TAG"
-          docker push "$IMAGE_TAG"
-          
-          echo "main_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "🚀 Successfully pushed: $IMAGE_TAG"
 
-      - name: 📝 Save Main Image Tag to File for Artifact
-        # This step creates a file containing the image tag which will be uploaded as an artifact
-        run: echo "${{ steps.build.outputs.main_image }}" > main_image_tag.txt
-        working-directory: ./src/app/main
+          ehco "main_image=$IMAGE_TAG >> "$GITHUB_OUTPUT"
+          echo "main_image_tag=$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: ⬆️ Upload Main Image Tag Artifact
-        # Uploads the file containing the image tag as a workflow artifact
-        uses: actions/upload-artifact@v4
+      - name: Pass the Final Image Tag (via repository_dispatch)
+        uses: peter-evans/repository-dispatch@v1
         with:
-          name: main-image-tag # Unique name for the artifact
-          path: ./src/app/main/main_image_tag.txt
-          # The artifact will be available for download by other workflows
-          # or by subsequent jobs in this workflow.
-
-      # Removed the peter-evans/repository-dispatch step as it's no longer the primary method for data transfer
-      # - name: Pass the Final Image Tag (via repository_dispatch)
-      #   uses: peter-evans/repository-dispatch@v1
-      #   with:
-      #     token: ${{ secrets.GHP_TOKEN }}
-      #     event-type: app-main-event
-      #     client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "main_image": "${{ steps.build.outputs.main_image }}"}'
+          token: ${{ secrets.GHP_TOKEN }}
+          event-type: ${{ env.EVENT_TYPE }}
+          client-payload: 
+            '{"ref": "${{ github.ref }}",
+            "sha": "${{ github.sha }}",
+            "main_image_tag": "${{ steps.build.outputs.main_image_tag }}"}'
 
       - name: 📋 Build Summary
         run: |
