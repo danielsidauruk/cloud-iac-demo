@@ -34,6 +34,8 @@ jobs:
       postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
       rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
       redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
+      username: ${{ steps.outputs.outputs.username }}
+      postgres_dbname: ${{ steps.outputs.outputs.postgres_dbname }}
       main_image: ${{ steps.get_images.outputs.main_image }}
       consumer_image: ${{ steps.get_images.outputs.consumer_image }}
 
@@ -122,6 +124,8 @@ jobs:
           echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+          echo "username=$(terraform output -raw username)" >> "$GITHUB_OUTPUT"
+          echo "postgres_dbname=$(terraform output -raw postgres_dbname)" >> "$GITHUB_OUTPUT"
 
 
   kubernetes:
@@ -161,6 +165,8 @@ jobs:
           TF_VAR_postgres_host_endpoint: ${{ needs.infra-outputs.outputs.postgres_host_endpoint }}
           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
+          TF_VAR_username: ${{ needs.infra-outputs.outputs.username }}
+          TF_VAR_postgres_dbname: ${{ needs.infra-outputs.outputs.postgres_dbname }}
           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
           TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
 
