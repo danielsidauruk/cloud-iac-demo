@@ -41,6 +41,16 @@ output "workload_identity_role" {
   description = "ARN of the K8s Workload Identity (IRSA) role."
 }
 
+output "console_access_arn" {
+  value       = module.iam.console_access_arn
+  description = "ARN of Console Access Role."
+}
+
+output "administrator_arns_list" {
+  value       = module.iam.administrator_arns_list
+  description = "List of Administrator ARNs."
+}
+
 # Service Credentials & Endpoints
 output "username" {
   value       = var.username
@@ -71,4 +81,3 @@ output "redis_host_endpoint" {
   value       = module.elasticache.redis_host_endpoint
   description = "Redis ElastiCache endpoint."
 }
-
