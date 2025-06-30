@@ -36,12 +36,12 @@ resource "kubernetes_manifest" "secret_provider_class" {
       parameters = {
         objects = yamlencode([
           {
-            objectName         = "${var.application_name}-${var.environment_name}-connection-string-test-37"
+            objectName         = "${var.application_name}-${var.environment_name}-connection-string-test-43"
             objectType         = "secretsmanager"
             objectVersionLabel = "AWSCURRENT"
           },
           {
-            objectName         = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-37"
+            objectName         = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-43"
             objectType         = "secretsmanager"
             objectVersionLabel = "AWSCURRENT"
           }
@@ -54,7 +54,7 @@ resource "kubernetes_manifest" "secret_provider_class" {
           data = [
             {
               key        = "database_password"
-              objectName = "${var.application_name}-${var.environment_name}-connection-string-test-37"
+              objectName = "${var.application_name}-${var.environment_name}-connection-string-test-43"
             }
           ]
         },
@@ -64,7 +64,7 @@ resource "kubernetes_manifest" "secret_provider_class" {
           data = [
             {
               key        = "rabbitmq_password"
-              objectName = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-37"
+              objectName = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-43"
             }
           ]
         }
