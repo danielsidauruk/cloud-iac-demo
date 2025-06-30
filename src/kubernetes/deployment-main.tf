@@ -62,7 +62,7 @@ resource "kubernetes_deployment" "main" {
             name = "PGPASSWORD"
             value_from {
               secret_key_ref {
-                name = "${var.application_name}-${var.environment_name}-rds-connection-secret-test-43"
+                name = "${var.application_name}-${var.environment_name}-rds-connection-secret-test-44"
                 key  = "database_password"
               }
             }
@@ -71,7 +71,7 @@ resource "kubernetes_deployment" "main" {
             name = "RABBITMQ_PASSWORD"
             value_from {
               secret_key_ref {
-                name = "${var.application_name}-${var.environment_name}-rabbiqmq-password-test-43"
+                name = "${var.application_name}-${var.environment_name}-rabbitmq-password-test-44"
                 key  = "rabbitmq_password"
               }
             }

@@ -31,11 +31,11 @@ jobs:
       alb_controller_role: ${{ steps.outputs.outputs.alb_controller_role }}
       workload_identity_role: ${{ steps.outputs.outputs.workload_identity_role }}
       bucket_name: ${{ steps.outputs.outputs.bucket_name }}
+      username: ${{ steps.outputs.outputs.username }}
+      postgres_dbname: ${{ steps.outputs.outputs.postgres_dbname }}
       postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
       rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
       redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
-      username: ${{ steps.outputs.outputs.username }}
-      postgres_dbname: ${{ steps.outputs.outputs.postgres_dbname }}
       main_image: ${{ steps.get_images.outputs.main_image }}
       consumer_image: ${{ steps.get_images.outputs.consumer_image }}
 
@@ -120,12 +120,12 @@ jobs:
           echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
           echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
           echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
+          echo "username=$(terraform output -raw username)" >> "$GITHUB_OUTPUT"
+          echo "postgres_dbname=$(terraform output -raw postgres_dbname)" >> "$GITHUB_OUTPUT"
           echo "bucket_name=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
           echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
-          echo "username=$(terraform output -raw username)" >> "$GITHUB_OUTPUT"
-          echo "postgres_dbname=$(terraform output -raw postgres_dbname)" >> "$GITHUB_OUTPUT"
 
 
   kubernetes:
@@ -161,12 +161,12 @@ jobs:
           TF_VAR_kubernetes_service_account_name: ${{ needs.infra-outputs.outputs.kubernetes_service_account_name }}
           TF_VAR_alb_controller_role: ${{ needs.infra-outputs.outputs.alb_controller_role }}
           TF_VAR_workload_identity_role: ${{ needs.infra-outputs.outputs.workload_identity_role }}
+          TF_VAR_username: ${{ needs.infra-outputs.outputs.username }}
+          TF_VAR_postgres_dbname: ${{ needs.infra-outputs.outputs.postgres_dbname }}
           TF_VAR_bucket_name: ${{ needs.infra-outputs.outputs.bucket_name }}
           TF_VAR_postgres_host_endpoint: ${{ needs.infra-outputs.outputs.postgres_host_endpoint }}
           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
-          TF_VAR_username: ${{ needs.infra-outputs.outputs.username }}
-          TF_VAR_postgres_dbname: ${{ needs.infra-outputs.outputs.postgres_dbname }}
           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
           TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
 
@@ -185,6 +185,13 @@ jobs:
 
           terraform apply -auto-approve -target=helm_release.csi_secrets_store
           terraform apply -auto-approve
+
+          # Get ingress URL
+          REGION="${{ needs.infra-outputs.outputs.primary_region }}"
+          KUBERNETES_CLUSTER="${{ needs.infra-outputs.outputs.kubernetes_cluster_name }}"
+
+          aws eks update-kubeconfig --region "$REGION" --name "$KUBERNETES_CLUSTER"
+          kubectl get svc -n ingress-nginx -l app.kubernetes.io/name=nginx-ingress-controller
 
       - name: 🛠️ Setup eksctl CLI Tool
         run: |
