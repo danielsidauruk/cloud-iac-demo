@@ -177,8 +177,8 @@ jobs:
           echo "main_image passed to Terraform: $TF_VAR_main_image"
           echo "consumer_image passed to Terraform: $TF_VAR_consumer_image"
 
-          # terraform apply -auto-approve -target=helm_release.csi_secrets_store
-          # terraform apply -auto-approve
+          terraform apply -auto-approve -target=helm_release.csi_secrets_store
+          terraform apply -auto-approve
 
       - name: 🛠️ Setup eksctl CLI Tool
         run: |
