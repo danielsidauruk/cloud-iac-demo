@@ -1,10 +1,10 @@
 locals {
-  name = "${var.application_name}-consumer"
+  consumer_application = "${var.application_name}-consumer"
 }
 
 resource "kubernetes_deployment" "consumer" {
   metadata {
-    name      = local.name
+    name      = local.consumer_application
     namespace = kubernetes_namespace.main.metadata[0].name
   }
 
@@ -13,14 +13,14 @@ resource "kubernetes_deployment" "consumer" {
 
     selector {
       match_labels = {
-        app = local.name
+        app = local.consumer_application
       }
     }
 
     template {
       metadata {
         labels = {
-          app = local.name
+          app = local.consumer_application
         }
       }
 
@@ -38,10 +38,9 @@ resource "kubernetes_deployment" "consumer" {
           }
         }
 
-
         container {
           image = var.consumer_image
-          name  = local.name
+          name  = local.consumer_application
 
           port {
             container_port = 3000

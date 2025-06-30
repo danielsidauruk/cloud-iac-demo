@@ -15,7 +15,7 @@ variable "primary_region" {
 }
 
 
-# Kubernetes Specific
+# Kubernetes Configuration
 variable "kubernetes_cluster_name" {
   type        = string
   description = "EKS cluster name."
@@ -28,19 +28,7 @@ variable "kubernetes_namespace" {
 
 variable "kubernetes_service_account_name" {
   type        = string
-  description = "K8s service account name."
-}
-
-variable "main_image" {
-  type        = string
-  description = "Main's image name"
-  default     = ""
-}
-
-variable "consumer_image" {
-  type        = string
-  description = "Consumer's image name"
-  default     = ""
+  description = "Kubernetes service account name."
 }
 
 
@@ -60,7 +48,6 @@ variable "workload_identity_role" {
 variable "username" {
   type        = string
   description = "Default admin username."
-  default     = "admininfra"
 }
 
 variable "postgres_dbname" {
@@ -90,17 +77,18 @@ variable "redis_host_endpoint" {
 
 
 # Docker Images
-variable "main_image_tag" {
+variable "main_image" {
   type        = string
-  description = "Main application Docker image tag."
-  default     = "latest"
+  description = "Main's image name"
+  default     = ""
 }
 
-variable "consumer_image_tag" {
+variable "consumer_image" {
   type        = string
-  description = "Consumer application Docker image tag."
-  default     = "latest"
+  description = "Consumer's image name"
+  default     = ""
 }
+
 
 # Port Numbers & Protocols
 variable "application_port" {

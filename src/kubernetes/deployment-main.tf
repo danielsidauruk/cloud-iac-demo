@@ -1,10 +1,10 @@
 locals {
-  application_name = "${var.application_name}-main"
+  main_application = "${var.application_name}-main"
 }
 
 resource "kubernetes_deployment" "main" {
   metadata {
-    name      = local.application_name
+    name      = local.main_application
     namespace = kubernetes_namespace.main.metadata[0].name
   }
 
@@ -13,14 +13,14 @@ resource "kubernetes_deployment" "main" {
 
     selector {
       match_labels = {
-        app = local.application_name
+        app = local.main_application
       }
     }
 
     template {
       metadata {
         labels = {
-          app = local.application_name
+          app = local.main_application
         }
       }
 
@@ -40,7 +40,7 @@ resource "kubernetes_deployment" "main" {
 
         container {
           image = var.main_image
-          name  = local.application_name
+          name  = local.main_application
 
           port {
             container_port = 3000
@@ -84,7 +84,7 @@ resource "kubernetes_deployment" "main" {
 
 resource "kubernetes_service" "main" {
   metadata {
-    name      = "${local.application_name}-service"
+    name      = "${local.main_application}-service"
     namespace = var.kubernetes_namespace
 
   }
@@ -95,7 +95,11 @@ resource "kubernetes_service" "main" {
       target_port = 3000
     }
     selector = {
-      app = local.application_name
+      app = local.main_application
     }
   }
+
+  depends_on = [
+    kubernetes_deployment.main
+  ]
 }
