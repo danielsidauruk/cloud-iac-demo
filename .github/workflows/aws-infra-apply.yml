@@ -49,7 +49,5 @@ jobs:
 
       - name: 🚀 Deploy Infrastructure to AWS
         run: |
-          set +e
           terraform apply -auto-approve -target=module.vpc.random_shuffle.az
           terraform apply -auto-approve
-          set -e
