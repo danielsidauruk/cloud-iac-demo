@@ -121,8 +121,7 @@ jobs:
           echo "kubernetes_namespace=$(terraform output -raw kubernetes_namespace)" >> "$GITHUB_OUTPUT"
           echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
           echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
-          echo "administrator_arns_list=$(terraform output -raw administrator_arns_list)" >> "$GITHUB_OUTPUT"
-          echo "console_access_arn=$(terraform output -raw console_access_arn)" >> "$GITHUB_OUTPUT"
+          echo "console_access_arn=$(terraform output -raw console_access_arn)" >> "$GITHUB_OUTPUT" # <-- Corrected: no $() needed if using -raw
           echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
           echo "username=$(terraform output -raw username)" >> "$GITHUB_OUTPUT"
           echo "postgres_dbname=$(terraform output -raw postgres_dbname)" >> "$GITHUB_OUTPUT"
@@ -132,6 +131,10 @@ jobs:
           echo "postgresql_secret=$(terraform output -raw postgresql_secret)" >> "$GITHUB_OUTPUT"
           echo "rabbitmq_secret=$(terraform output -raw rabbitmq_secret)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+          
+          echo "administrator_arns_list<<EOF" >> "$GITHUB_OUTPUT"
+          terraform output -json administrator_arns_list >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
 
   kubernetes:
@@ -174,10 +177,9 @@ jobs:
           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
           TF_VAR_postgresql_secret: ${{ needs.infra-outputs.outputs.postgresql_secret }}
-          TV_VAR_rabbitmq_secret: ${{ needs.infra-outputs.outputs.rabbitmq_secret }}
+          TF_VAR_rabbitmq_secret: ${{ needs.infra-outputs.outputs.rabbitmq_secret }} # <-- FIX: Corrected typo from TV_VAR_ to TF_VAR_
           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
           TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
-
 
         run: |
           terraform fmt -check
@@ -192,7 +194,7 @@ jobs:
           echo "main_image passed to Terraform: $TF_VAR_main_image"
           echo "consumer_image passed to Terraform: $TF_VAR_consumer_image"
 
-          terraform apply -auto-approve -target=helm_release.csi_secrets_store
+          terraform apply -auto-approve -target=helm_release.csi_secrets_store 
           terraform apply -auto-approve
 
           # Get ingress URL
@@ -213,7 +215,8 @@ jobs:
           ARCH=amd64
           PLATFORM=$(uname -s)_$ARCH
           curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
-          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          # Verify checksum (good practice)
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep "$PLATFORM" | sha256sum --check
           tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
           rm eksctl_$PLATFORM.tar.gz
@@ -223,7 +226,8 @@ jobs:
         run: |
           KUBERNETES_CLUSTER="${{ needs.infra-outputs.outputs.kubernetes_cluster_name }}"
           REGION="${{ needs.infra-outputs.outputs.primary_region }}"
-          ADMINISTRATOR_ARNS_LIST="${{ needs.infra-outputs.outputs.administrator_arns_list }}"
+          
+          ADMINISTRATOR_ARNS_LIST_JSON='${{ needs.infra-outputs.outputs.administrator_arns_list }}' 
           CONSOLE_ACCESS_ARN="${{ needs.infra-outputs.outputs.console_access_arn}}"
 
           eksctl get iamidentitymapping \
@@ -237,8 +241,7 @@ jobs:
             --group eks-console-dashboard-full-access-group \
             --no-duplicate-arns
 
-          IFS=',' read -ra ARNS <<< "$ADMINISTRATOR_ARNS_LIST"
-          for arn in "${ARNS[@]}"; do
+          for arn in $(echo "$ADMINISTRATOR_ARNS_LIST_JSON" | jq -r '.[]'); do
             eksctl create iamidentitymapping \
               --cluster "$KUBERNETES_CLUSTER" \
               --region="$REGION" \
