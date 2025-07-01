@@ -61,24 +61,8 @@ jobs:
             -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
             -backend-config="encrypt=true"
 
-      - name: 📋 Plan Infrastructure Destruction
-        run: |
-          echo "🔍 Planning destruction of infrastructure..."
-          terraform plan -destroy -var-file="terraform.tfvars" -out=destroy.tfplan
-
-      - name: 👀 Show Destroy Plan
-        run: |
-          echo "📋 Resources that will be DESTROYED:"
-          terraform show destroy.tfplan
-
       - name: 💥 Execute Infrastructure Destruction
         run: |
           echo "💥 Destroying infrastructure..."
           terraform apply -auto-approve destroy.tfplan
           echo "✅ Infrastructure destruction completed"
-
-      - name: 🧹 Cleanup Summary
-        run: |
-          echo "🧹 Infrastructure destroyed successfully"
-          echo "📝 State file remains in S3 for audit purposes"
-          echo "🗑️  To completely remove state, manually delete from S3 bucket"

@@ -123,7 +123,7 @@ jobs:
           echo "kubernetes_namespace=$(terraform output -raw kubernetes_namespace)" >> "$GITHUB_OUTPUT"
           echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
           echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
-          echo "console_access_arn=$(terraform output -raw console_access_arn)" >> "$GITHUB_OUTPUT" # <-- Corrected: no $() needed if using -raw
+          echo "console_access_arn=$(terraform output -raw console_access_arn)" >> "$GITHUB_OUTPUT"
           echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
           echo "username=$(terraform output -raw username)" >> "$GITHUB_OUTPUT"
           echo "postgres_dbname=$(terraform output -raw postgres_dbname)" >> "$GITHUB_OUTPUT"
@@ -179,7 +179,7 @@ jobs:
           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
           TF_VAR_postgresql_secret: ${{ needs.infra-outputs.outputs.postgresql_secret }}
-          TF_VAR_rabbitmq_secret: ${{ needs.infra-outputs.outputs.rabbitmq_secret }} # <-- FIX: Corrected typo from TV_VAR_ to TF_VAR_
+          TF_VAR_rabbitmq_secret: ${{ needs.infra-outputs.outputs.rabbitmq_secret }}
           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
           TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
 
@@ -224,11 +224,10 @@ jobs:
           rm eksctl_$PLATFORM.tar.gz
           eksctl version
           
-      - name: Test eksctl command
+      - name: 🧪 Test eksctl command
         run: |
           KUBERNETES_CLUSTER="${{ needs.infra-outputs.outputs.kubernetes_cluster_name }}"
           REGION="${{ needs.infra-outputs.outputs.primary_region }}"
-          
           ADMINISTRATOR_ARNS_LIST_JSON='${{ needs.infra-outputs.outputs.administrator_arns_list }}' 
           CONSOLE_ACCESS_ARN="${{ needs.infra-outputs.outputs.console_access_arn}}"
 
@@ -243,11 +242,11 @@ jobs:
             --group eks-console-dashboard-full-access-group \
             --no-duplicate-arns
 
-          for arn in $(echo "$ADMINISTRATOR_ARNS_LIST_JSON" | jq -r '.[]'); do
+          for ARN in $(echo "$ADMINISTRATOR_ARNS_LIST_JSON" | jq -r '.[]'); do
             eksctl create iamidentitymapping \
               --cluster "$KUBERNETES_CLUSTER" \
               --region="$REGION" \
-              --arn "$arn" \
+              --arn "$ARN" \
               --group eks-console-dashboard-restricted-access-group \
               --no-duplicate-arns
           done
