@@ -72,9 +72,19 @@ output "postgres_host_endpoint" {
   description = "PostgreSQL database endpoint."
 }
 
+output "postgresql_secret" {
+  value       = module.rds.postgresql_secret
+  description = "PostgreSQL database secret"
+}
+
 output "rabbitmq_host_endpoint" {
   value       = module.mq.rabbitmq_host_endpoint
   description = "RabbitMQ broker endpoint."
+}
+
+output "rabbitmq_secret" {
+  value       = module.mq.rabbitmq_secret
+  description = "RabbitMQ broker secret"
 }
 
 output "redis_host_endpoint" {

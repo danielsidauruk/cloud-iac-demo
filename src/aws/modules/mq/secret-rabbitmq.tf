@@ -4,9 +4,9 @@ resource "random_password" "rabbitmq_password" {
   override_special = "!#$%&*()-_+[]{}<>?"
 }
 
-resource "aws_secretsmanager_secret" "rabbitmq_password" {
-  name                    = "${var.application_name}-${var.environment_name}-rabbitmq-password-test-44"
-  description             = "Rabbitmq password"
+resource "aws_secretsmanager_secret" "rabbitmq_secret" {
+  name                    = "${var.application_name}-${var.environment_name}-rabbitmq-password-test-45"
+  description             = "Rabbitmq Secret"
   recovery_window_in_days = 7
 
   tags = {
@@ -17,6 +17,6 @@ resource "aws_secretsmanager_secret" "rabbitmq_password" {
 }
 
 resource "aws_secretsmanager_secret_version" "rabbitmq_password" {
-  secret_id     = aws_secretsmanager_secret.rabbitmq_password.id
+  secret_id     = aws_secretsmanager_secret.rabbitmq_secret.id
   secret_string = random_password.rabbitmq_password.result
 }

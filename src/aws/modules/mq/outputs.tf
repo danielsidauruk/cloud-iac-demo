@@ -7,3 +7,8 @@ output "rabbitmq_host_endpoint" {
   description = "RabbitMQ broker host endpoint."
   value       = aws_mq_broker.rabbitmq_broker.instances[0].endpoints[0]
 }
+
+output "rabbitmq_secret" {
+  description = "PostgreSQL broker secret"
+  value       = aws_secretsmanager_secret.rabbitmq_secret.name
+}
