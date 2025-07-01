@@ -36,6 +36,8 @@ jobs:
       username: ${{ steps.outputs.outputs.username }}
       postgres_dbname: ${{ steps.outputs.outputs.postgres_dbname }}
       postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
+      postgresql_secret: ${{ steps.outputs.outputs.postgresql_secret }}
+      rabbitmq_secret: ${{ steps.outputs.outputs.rabbitmq_secret }}
       rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
       redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
       main_image: ${{ steps.get_images.outputs.main_image }}
