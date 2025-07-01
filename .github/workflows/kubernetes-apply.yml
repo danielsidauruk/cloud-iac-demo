@@ -129,6 +129,8 @@ jobs:
           echo "bucket_name=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
           echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
           echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
+          echo "postgresql_secret=$(terraform output -raw postgresql_secret)" >> "$GITHUB_OUTPUT"
+          echo "rabbitmq_secret=$(terraform output -raw rabbitmq_secret)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
 
 
@@ -171,6 +173,8 @@ jobs:
           TF_VAR_postgres_host_endpoint: ${{ needs.infra-outputs.outputs.postgres_host_endpoint }}
           TF_VAR_rabbitmq_host_endpoint: ${{ needs.infra-outputs.outputs.rabbitmq_host_endpoint }}
           TF_VAR_redis_host_endpoint: ${{ needs.infra-outputs.outputs.redis_host_endpoint }}
+          TF_VAR_postgresql_secret: ${{ needs.infra-outputs.outputs.postgresql_secret }}
+          TV_VAR_rabbitmq_secret: ${{ needs.infra-outputs.outputs.rabbitmq_secret }}
           TF_VAR_main_image: ${{ needs.infra-outputs.outputs.main_image }}
           TF_VAR_consumer_image: ${{ needs.infra-outputs.outputs.consumer_image }}
 
