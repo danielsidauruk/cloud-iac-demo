@@ -65,9 +65,19 @@ variable "postgres_host_endpoint" {
   description = "PostgreSQL database endpoint."
 }
 
+variable "postgresql_secret" {
+  type        = string
+  description = "PostgreSQL database secret"
+}
+
 variable "rabbitmq_host_endpoint" {
   type        = string
   description = "RabbitMQ broker endpoint."
+}
+
+variable "rabbitmq_secret" {
+  type        = string
+  description = "RabbitMQ broker secret"
 }
 
 variable "redis_host_endpoint" {
