@@ -62,7 +62,7 @@ resource "kubernetes_deployment" "consumer" {
             name = "RABBITMQ_PASSWORD"
             value_from {
               secret_key_ref {
-                name = "${var.application_name}-${var.environment_name}-rabbitmq-password"
+                name = "${var.application_name}-${var.environment_name}-rabbitmq-secret"
                 key  = "rabbitmq_password"
               }
             }

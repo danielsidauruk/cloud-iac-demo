@@ -49,17 +49,17 @@ resource "kubernetes_manifest" "secret_provider_class" {
       }
       secretObjects = [
         {
-          secretName = "${var.application_name}-${var.environment_name}-rds-connection-secret"
+          secretName = "${var.application_name}-${var.environment_name}-postgresql-secret"
           type       = "Opaque"
           data = [
             {
-              key        = "database_password"
+              key        = "postgresql_password"
               objectName = var.postgresql_secret
             }
           ]
         },
         {
-          secretName = "${var.application_name}-${var.environment_name}-rabbitmq-password"
+          secretName = "${var.application_name}-${var.environment_name}-rabbitmq-secret"
           type       = "Opaque"
           data = [
             {

@@ -22,19 +22,6 @@ resource "kubernetes_ingress_v1" "ingress" {
             }
           }
         }
-        path {
-          path      = "/api"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = kubernetes_service.main.metadata[0].name
-              port {
-                number = 3000
-              }
-            }
-          }
-        }
       }
     }
   }
