@@ -1,5 +1,11 @@
 name: 🚀 AWS Infrastructure Apply
 
+# 📋 Build/Workflow Summary
+# This workflow deploys AWS infrastructure using Terraform
+# Triggers: Push to main branch (src/aws/**) or manual dispatch
+# Actions: Initializes, validates, and applies Terraform configuration
+# Resources: Creates VPC, EKS cluster, RDS, ElastiCache, and other AWS resources
+
 on:
   push:
     branches: [main]
@@ -51,3 +57,5 @@ jobs:
         run: |
           terraform apply -auto-approve -target=module.vpc.random_shuffle.az
           terraform apply -auto-approve
+
+          echo "✅ Status: Infrastructure deployment completed successfully"

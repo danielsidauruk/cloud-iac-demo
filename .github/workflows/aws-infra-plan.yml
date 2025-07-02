@@ -1,5 +1,11 @@
 name: 📋 AWS Infrastructure Plan
 
+# 📋 Build/Workflow Summary
+# This workflow creates a Terraform plan for AWS infrastructure changes
+# Triggers: Pull requests to main branch (src/aws/**) or manual dispatch
+# Actions: Formats, initializes, validates, and generates execution plan
+# Purpose: Review infrastructure changes before applying them
+
 on:
   pull_request:
     branches: [main]
@@ -35,21 +41,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: 🎨 Check Terraform Format
-        run: terraform fmt -check
-
       - name: 🔧 Initialize Terraform
         run: |
+          terraform fmt -check
           terraform init \
             -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
             -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
             -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
             -backend-config="encrypt=true"
-
-      - name: ✅ Validate Terraform Configuration
-        run: terraform validate
+          
+          terraform validate
 
       - name: 📋 Generate Infrastructure Plan
         run: |
           terraform apply -auto-approve -target=module.vpc.random_shuffle.az
           terraform plan
+
+          echo "✅ Status: Infrastructure plan generated successfully"

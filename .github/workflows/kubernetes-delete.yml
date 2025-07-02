@@ -169,4 +169,4 @@ jobs:
           terraform destroy -auto-approve -target=kubernetes_deployment.main
           terraform destroy -auto-approve
 
-
+          echo "✅ Status: Kubernetes deletion completed successfully"

@@ -1,5 +1,11 @@
 name: 📦 App Consumer Build
 
+# 📋 Build/Workflow Summary
+# This workflow builds and pushes the consumer application Docker image to ECR
+# Triggers: Push to main branch (src/app/consumer/**) or manual dispatch
+# Outputs: Consumer Docker image pushed to ECR with short SHA tag
+# Next Step: Dispatches repository event to trigger Kubernetes deployment
+
 on:
   push:
     branches: [main]
@@ -70,7 +76,7 @@ jobs:
 
           echo "consumer_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Pass the Final Image Tag (via repository_dispatch)
+      - name: 📡 Pass the Final Image Tag (via repository_dispatch)
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.GHP_TOKEN }}
