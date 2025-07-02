@@ -17,8 +17,6 @@ on:
 
 env:
   TF_VERSION: '1.5.0'
-  MAIN_EVENT_TYPE: "app-main-event"
-  CONSUMER_EVENT_TYPE: "app-consumer-event"
 
 jobs:
   infra-outputs:
@@ -63,52 +61,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: 🔍 Get Image Tags from Event or ECR
+      - name: 🔍 Get Image Tags from ECR
         id: get_images
         run: |
-          MAIN_IMAGE_FROM_EVENT=""
-          CONSUMER_IMAGE_FROM_EVENT=""
-
           REGISTRY_ID=$(aws sts get-caller-identity --query Account --output text)
           REGION=${{ vars.AWS_REGION }}
           MAIN_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-${{ vars.MAIN_REPOSITORY }}"
           CONSUMER_REPO="ecr-${{ vars.APPLICATION_NAME }}-${{ vars.ENVIRONMENT_NAME }}-${{ vars.CONSUMER_REPOSITORY }}"
 
-          LATEST_MAIN_IMAGE=$(aws ecr describe-images \
+          MAIN_IMAGE=$(aws ecr describe-images \
             --repository-name $MAIN_REPO \
             --filter tagStatus=TAGGED \
             --query "sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0] | join('', ['${REGISTRY_ID}.dkr.ecr.${REGION}.amazonaws.com/', '${MAIN_REPO}:', @])" \
             --output text)
 
-          LATEST_CONSUMER_IMAGE=$(aws ecr describe-images \
+          CONSUMER_IMAGE=$(aws ecr describe-images \
             --repository-name $CONSUMER_REPO \
             --filter tagStatus=TAGGED \
             --query "sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0] | join('', ['${REGISTRY_ID}.dkr.ecr.${REGION}.amazonaws.com/', '${CONSUMER_REPO}:', @])" \
             --output text)
           
-          if [[ "${{ github.event.action }}" == ${{ env.MAIN_EVENT_TYPE }} ]]; then
-            MAIN_IMAGE_FROM_EVENT="${{ github.event.client_payload.main_image }}" 
-          elif [[ "${{ github.event.action }}" == ${{ env.CONSUMER_EVENT_TYPE }} ]]; then
-            CONSUMER_IMAGE_FROM_EVENT="${{ github.event.client_payload.consumer_image }}"
-          fi
-
-          # Determine final main_image
-          if [[ -n "$MAIN_IMAGE_FROM_EVENT" && "$MAIN_IMAGE_FROM_EVENT" != "$LATEST_MAIN_IMAGE" ]]; then
-            echo "main_image=$MAIN_IMAGE_FROM_EVENT" >> "$GITHUB_OUTPUT"
-            echo "main_image from Event (different from ECR): $MAIN_IMAGE_FROM_EVENT"
-          else
-            echo "main_image=$LATEST_MAIN_IMAGE" >> "$GITHUB_OUTPUT"
-            echo "main_image from ECR (or event was same as ECR): $LATEST_MAIN_IMAGE"
-          fi
-
-          # Determine final consumer_image
-          if [[ -n "$CONSUMER_IMAGE_FROM_EVENT" && "$CONSUMER_IMAGE_FROM_EVENT" != "$LATEST_CONSUMER_IMAGE" ]]; then
-            echo "consumer_image=$CONSUMER_IMAGE_FROM_EVENT" >> "$GITHUB_OUTPUT"
-            echo "consumer_image from Event (different from ECR): $CONSUMER_IMAGE_FROM_EVENT"
-          else
-            echo "consumer_image=$LATEST_CONSUMER_IMAGE" >> "$GITHUB_OUTPUT"
-            echo "consumer_image from ECR (or event was same as ECR): $LATEST_CONSUMER_IMAGE"
-          fi
+          echo "main_image=$MAIN_IMAGE" >> "$GITHUB_OUTPUT"
+          echo "consumer_image=$CONSUMER_IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: 📊 Extract Infrastructure Outputs
         id: outputs
@@ -144,6 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: infra-outputs
     environment: dev
+    if: github.event.inputs.confirm_destroy == 'DESTROY' && github.event.inputs.environment == 'dev'
 
     steps:
       - name: 📥 Checkout Repository

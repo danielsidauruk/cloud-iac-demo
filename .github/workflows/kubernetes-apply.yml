@@ -228,7 +228,6 @@ jobs:
         run: |
           KUBERNETES_CLUSTER="${{ needs.infra-outputs.outputs.kubernetes_cluster_name }}"
           REGION="${{ needs.infra-outputs.outputs.primary_region }}"
-          ADMINISTRATOR_ARNS_LIST_JSON='${{ needs.infra-outputs.outputs.administrator_arns_list }}' 
           CONSOLE_ACCESS_ARN="${{ needs.infra-outputs.outputs.console_access_arn}}"
 
           eksctl get iamidentitymapping \
@@ -242,7 +241,9 @@ jobs:
             --group eks-console-dashboard-full-access-group \
             --no-duplicate-arns
 
-          for ARN in $(echo "$ADMINISTRATOR_ARNS_LIST_JSON" | jq -r '.[]'); do
+          echo "${{ needs.infra-outputs.outputs.administrator_arns_list }}" > administrator_arns.json
+          
+          for ARN in $(jq -r '.[]' administrator_arns.json); do
             eksctl create iamidentitymapping \
               --cluster "$KUBERNETES_CLUSTER" \
               --region="$REGION" \
@@ -250,3 +251,7 @@ jobs:
               --group eks-console-dashboard-restricted-access-group \
               --no-duplicate-arns
           done
+
+          cat administrator_arns.json
+
+          rm administrator_arns.json
