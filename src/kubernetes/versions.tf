@@ -13,12 +13,7 @@ terraform {
       version = "~> 5.17"
     }
   }
-  backend "s3" {
-    bucket  = "openmusicapi-infra-tfstate"
-    region  = "ap-southeast-3"
-    key     = "openmusicapi-k8s-state"
-    encrypt = true
-  }
+  backend "s3" {}
 }
 
 provider "aws" {

@@ -1,7 +1,7 @@
 resource "kubernetes_config_map" "application_env_config" {
   metadata {
     name      = "${var.application_name}-${var.environment_name}-env-config"
-    namespace = var.kubernetes_namespace
+    namespace = kubernetes_namespace.main.metadata[0].name
     labels = {
       app = var.application_name
     }

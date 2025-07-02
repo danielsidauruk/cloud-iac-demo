@@ -29,7 +29,7 @@ resource "kubernetes_manifest" "secret_provider_class" {
     kind       = "SecretProviderClass"
     metadata = {
       name      = "${var.application_name}-${var.environment_name}-secret-provider-class"
-      namespace = var.kubernetes_namespace
+      namespace = kubernetes_namespace.main.metadata[0].name
     }
     spec = {
       provider = "aws"
