@@ -1,11 +1,5 @@
 name: 🚀 Kubernetes Apply
 
-# 📋 Build/Workflow Summary
-# This workflow deploys applications to Kubernetes using Terraform
-# Triggers: Push to main (src/kubernetes/**), manual dispatch, or repository events
-# Actions: Gets infrastructure outputs, deploys apps to EKS, configures IAM mappings
-# Dependencies: Requires AWS infrastructure to be deployed first
-
 on:
   push:
     branches: [main]

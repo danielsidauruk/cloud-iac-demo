@@ -1,11 +1,5 @@
 name: 💥 AWS Infrastructure Destroy
 
-# 📋 Build/Workflow Summary
-# This workflow destroys AWS infrastructure using Terraform
-# Triggers: Manual dispatch only (requires "DESTROY" confirmation)
-# Safety: Validates destroy confirmation before proceeding
-# Action: Completely removes all AWS resources created by Terraform
-
 on:
   workflow_dispatch:
     inputs:

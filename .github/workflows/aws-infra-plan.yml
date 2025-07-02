@@ -1,11 +1,5 @@
 name: 📋 AWS Infrastructure Plan
 
-# 📋 Build/Workflow Summary
-# This workflow creates a Terraform plan for AWS infrastructure changes
-# Triggers: Pull requests to main branch (src/aws/**) or manual dispatch
-# Actions: Formats, initializes, validates, and generates execution plan
-# Purpose: Review infrastructure changes before applying them
-
 on:
   pull_request:
     branches: [main]

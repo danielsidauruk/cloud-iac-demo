@@ -1,11 +1,5 @@
 name: 📦 App Consumer Build
 
-# 📋 Build/Workflow Summary
-# This workflow builds and pushes the consumer application Docker image to ECR
-# Triggers: Push to main branch (src/app/consumer/**) or manual dispatch
-# Outputs: Consumer Docker image pushed to ECR with short SHA tag
-# Next Step: Dispatches repository event to trigger Kubernetes deployment
-
 on:
   push:
     branches: [main]
