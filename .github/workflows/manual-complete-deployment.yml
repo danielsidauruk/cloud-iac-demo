@@ -300,6 +300,8 @@ jobs:
           eksctl version
           
       - name: 🧪 Test eksctl command
+        env:
+          ADMIN_ARNS_JSON_STRING: ${{ needs.build-aws-infra.outputs.administrator_arns_list }}
         run: |
           KUBERNETES_CLUSTER="${{ needs.build-aws-infra.outputs.kubernetes_cluster_name }}"
           REGION="${{ needs.build-aws-infra.outputs.primary_region }}"
@@ -315,10 +317,8 @@ jobs:
             --arn "$CONSOLE_ACCESS_ARN" \
             --group eks-console-dashboard-full-access-group \
             --no-duplicate-arns
-          
-          ADMIN_ARNS_ARRAY=$(jq -r '.[]' <<< "${{ needs.build-aws-infra.outputs.administrator_arns_list }}")
 
-          for ARN in $ADMIN_ARNS_ARRAY; do
+          for ARN in $(echo "$ADMIN_ARNS_JSON_STRING" | jq -r '.[]'); do
             eksctl create iamidentitymapping \
               --cluster "$KUBERNETES_CLUSTER" \
               --region="$REGION" \
@@ -326,5 +326,5 @@ jobs:
               --group eks-console-dashboard-restricted-access-group \
               --no-duplicate-arns
           done
-        
+          
           echo "✅ Status: Kubernetes deployment completed successfully"
