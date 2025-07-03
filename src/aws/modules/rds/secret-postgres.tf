@@ -5,7 +5,7 @@ resource "random_password" "postgresql_password" {
 }
 
 resource "aws_secretsmanager_secret" "postgresql_secret" {
-  name                    = "${var.application_name}-${var.environment_name}-postgresql-secret"
+  name                    = "${var.application_name}-${var.environment_name}-postgresql-secret-01"
   description             = "Database connection string"
   recovery_window_in_days = 7
 

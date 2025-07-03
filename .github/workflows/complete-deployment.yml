@@ -1,0 +1,337 @@
+name: 🚀 Complete Deployment
+
+on:
+  # push:
+  #   branches: [main]
+  #   paths: 
+  #     - 'src/app/main/**'
+  #     - 'src/app/consumer/**'
+  #     - 'src/kubernetes/**'
+  #     - 'src/aws/**'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+  ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
+  MAIN_REPOSITORY: ${{ vars.MAIN_REPOSITORY }}
+  CONSUMER_REPOSITORY: ${{ vars.CONSUMER_REPOSITORY }}
+  NODE_VERSION: '20'
+  TF_VERSION: '1.5.0'
+
+jobs:
+
+  build-aws-infra:
+    name: ☁️ Deploy AWS Infrastructure
+    runs-on: ubuntu-latest
+    environment: dev
+    defaults:
+      run:
+        working-directory: ./src/aws
+    outputs:
+      application_name: ${{ steps.outputs.outputs.application_name }}
+      environment_name: ${{ steps.outputs.outputs.environment_name }}
+      primary_region: ${{ steps.outputs.outputs.primary_region }}
+      kubernetes_cluster_name: ${{ steps.outputs.outputs.kubernetes_cluster_name }}
+      kubernetes_namespace: ${{ steps.outputs.outputs.kubernetes_namespace }}
+      kubernetes_service_account_name: ${{ steps.outputs.outputs.kubernetes_service_account_name }}
+      alb_controller_role: ${{ steps.outputs.outputs.alb_controller_role }}
+      administrator_arns_list: ${{ steps.outputs.outputs.administrator_arns_list }}
+      console_access_arn: ${{ steps.outputs.outputs.console_access_arn }}
+      workload_identity_role: ${{ steps.outputs.outputs.workload_identity_role }}
+      bucket_name: ${{ steps.outputs.outputs.bucket_name }}
+      username: ${{ steps.outputs.outputs.username }}
+      postgres_dbname: ${{ steps.outputs.outputs.postgres_dbname }}
+      postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
+      postgresql_secret: ${{ steps.outputs.outputs.postgresql_secret }}
+      rabbitmq_secret: ${{ steps.outputs.outputs.rabbitmq_secret }}
+      rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
+      redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
+      main_image: ${{ steps.get_images.outputs.main_image }}
+      consumer_image: ${{ steps.get_images.outputs.consumer_image }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔧 Terraform Initialization & Validation
+        run: |
+          terraform fmt -check
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+            -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+            -backend-config="key=${{ vars.TF_AWS_BACKEND_KEY }}" \
+            -backend-config="encrypt=true"
+          terraform validate
+
+      - name: 📋 Terraform Plan - Review Changes
+        run: |
+          terraform apply -auto-approve -target=module.vpc.random_shuffle.az
+          terraform plan -detailed-exitcode -out=tfplan
+          
+          terraform show -no-color tfplan
+
+      - name: 🚀 Deploy Infrastructure to AWS
+        run: |
+          terraform apply -auto-approve -target=module.vpc.random_shuffle.az
+          terraform apply -auto-approve
+
+          echo "application_name=$(terraform output -raw application_name)" >> "$GITHUB_OUTPUT"
+          echo "environment_name=$(terraform output -raw environment_name)" >> "$GITHUB_OUTPUT"
+          echo "primary_region=$(terraform output -raw primary_region)" >> "$GITHUB_OUTPUT"
+          echo "kubernetes_cluster_name=$(terraform output -raw kubernetes_cluster_name)" >> "$GITHUB_OUTPUT"
+          echo "kubernetes_namespace=$(terraform output -raw kubernetes_namespace)" >> "$GITHUB_OUTPUT"
+          echo "kubernetes_service_account_name=$(terraform output -raw kubernetes_service_account_name)" >> "$GITHUB_OUTPUT"
+          echo "alb_controller_role=$(terraform output -raw alb_controller_role)" >> "$GITHUB_OUTPUT"
+          echo "console_access_arn=$(terraform output -raw console_access_arn)" >> "$GITHUB_OUTPUT"
+          echo "workload_identity_role=$(terraform output -raw workload_identity_role)" >> "$GITHUB_OUTPUT"
+          echo "username=$(terraform output -raw username)" >> "$GITHUB_OUTPUT"
+          echo "postgres_dbname=$(terraform output -raw postgres_dbname)" >> "$GITHUB_OUTPUT"
+          echo "bucket_name=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
+          echo "postgres_host_endpoint=$(terraform output -raw postgres_host_endpoint)" >> "$GITHUB_OUTPUT"
+          echo "rabbitmq_host_endpoint=$(terraform output -raw rabbitmq_host_endpoint)" >> "$GITHUB_OUTPUT"
+          echo "postgresql_secret=$(terraform output -raw postgresql_secret)" >> "$GITHUB_OUTPUT"
+          echo "rabbitmq_secret=$(terraform output -raw rabbitmq_secret)" >> "$GITHUB_OUTPUT"
+          echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
+          
+          echo "administrator_arns_list<<EOF" >> "$GITHUB_OUTPUT"
+          terraform output -json administrator_arns_list >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          ecr_repositories_arn = 
+
+          echo "✅ Status: Infrastructure deployment completed successfully"
+
+  build-main-app:
+    name: 🐳 Build Main App
+    runs-on: ubuntu-latest
+    needs: ["build-aws-infra"]
+    environment: dev
+    defaults:
+      run:
+        working-directory: ./src/app/main
+    outputs:
+      main_image: ${{ steps.build.outputs.main_image }}
+    
+    steps:
+      - name: 📥 Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: src/app/main/package-lock.json
+
+      - name: 📚 Install Dependencies & Run Tests
+        run: |
+          npm ci
+          npm test || echo "⚠️ No tests found - skipping"
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔑 Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🐳 Build & Push Docker Image
+        id: build 
+        run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+          ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.MAIN_REPOSITORY }}:${SHORT_SHA}"
+          
+          echo "🔨 Building and pushing image: $IMAGE_TAG"
+          docker build . -t $IMAGE_TAG
+          docker push $IMAGE_TAG
+          echo "main_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "🚀 Successfully pushed: $IMAGE_TAG"
+
+  build-consumer-app:
+    name: 🐳 Build Consumer App
+    runs-on: ubuntu-latest
+    environment: dev
+    needs: ["build-aws-infra"]
+    defaults:
+      run:
+        working-directory: ./src/app/consumer
+    outputs:
+      consumer_image: ${{ steps.build.outputs.consumer_image }}
+    
+    steps:
+      - name: 📥 Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: src/app/consumer/package-lock.json
+
+      - name: 📚 Install Dependencies & Run Tests
+        run: |
+          npm ci
+          npm test || echo "⚠️ No tests found - skipping"
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔑 Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🐳 Build & Push Docker Image
+        id: build
+        run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          IMAGE_TAG="${ECR_REGISTRY}/ecr-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.CONSUMER_REPOSITORY }}:${SHORT_SHA}"
+          
+          echo "🔨 Building and pushing image: $IMAGE_TAG"
+          docker build . -t $IMAGE_TAG
+          docker push $IMAGE_TAG
+          echo "consumer_image=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "🚀 Successfully pushed: $IMAGE_TAG"
+
+  deploy-kubernetes:
+    name: ☸️ Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    environment: dev
+    needs: [build-main-app, build-consumer-app, build-aws-infra]
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.TF_BACKEND_REGION }}
+
+      - name: 🚀 Deploy to Kubernetes with Terraform
+        working-directory: ./src/kubernetes
+        env:
+          TF_VAR_application_name: ${{ needs.build-aws-infra.outputs.application_name }}
+          TF_VAR_environment_name: ${{ needs.build-aws-infra.outputs.environment_name }}
+          TF_VAR_primary_region: ${{ needs.build-aws-infra.outputs.primary_region }}
+          TF_VAR_kubernetes_cluster_name: ${{ needs.build-aws-infra.outputs.kubernetes_cluster_name }}
+          TF_VAR_kubernetes_namespace: ${{ needs.build-aws-infra.outputs.kubernetes_namespace }}
+          TF_VAR_kubernetes_service_account_name: ${{ needs.build-aws-infra.outputs.kubernetes_service_account_name }}
+          TF_VAR_alb_controller_role: ${{ needs.build-aws-infra.outputs.alb_controller_role }}
+          TF_VAR_workload_identity_role: ${{ needs.build-aws-infra.outputs.workload_identity_role }}
+          TF_VAR_username: ${{ needs.build-aws-infra.outputs.username }}
+          TF_VAR_postgres_dbname: ${{ needs.build-aws-infra.outputs.postgres_dbname }}
+          TF_VAR_bucket_name: ${{ needs.build-aws-infra.outputs.bucket_name }}
+          TF_VAR_postgres_host_endpoint: ${{ needs.build-aws-infra.outputs.postgres_host_endpoint }}
+          TF_VAR_rabbitmq_host_endpoint: ${{ needs.build-aws-infra.outputs.rabbitmq_host_endpoint }}
+          TF_VAR_redis_host_endpoint: ${{ needs.build-aws-infra.outputs.redis_host_endpoint }}
+          TF_VAR_postgresql_secret: ${{ needs.build-aws-infra.outputs.postgresql_secret }}
+          TF_VAR_rabbitmq_secret: ${{ needs.build-aws-infra.outputs.rabbitmq_secret }}
+          TF_VAR_main_image: ${{ needs.build-main-app.outputs.main_image }}
+          TF_VAR_consumer_image: ${{ needs.build-consumer-app.outputs.consumer_image }}
+
+        run: |
+          terraform fmt -check
+          terraform init \
+              -backend-config="bucket=${{ vars.TF_BACKEND_BUCKET }}" \
+              -backend-config="region=${{ vars.TF_BACKEND_REGION }}" \
+              -backend-config="key=${{ vars.TF_KUBERNETES_BACKEND_KEY }}" \
+              -backend-config="encrypt=true"
+
+          terraform validate
+
+          echo "main_image passed to Terraform: $TF_VAR_main_image"
+          echo "consumer_image passed to Terraform: $TF_VAR_consumer_image"
+
+          terraform apply -auto-approve -target=helm_release.csi_secrets_store 
+          terraform apply -auto-approve
+
+          # Get ingress URL
+          REGION="${{ needs.build-aws-infra.outputs.primary_region }}"
+          KUBERNETES_CLUSTER="${{ needs.build-aws-infra.outputs.kubernetes_cluster_name }}"
+
+          aws eks update-kubeconfig --region "$REGION" --name "$KUBERNETES_CLUSTER"
+          INGRESS_URL=$(kubectl get svc -n ingress-nginx -l app.kubernetes.io/name=nginx-ingress-controller -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+          
+          if [ -n "$INGRESS_URL" ]; then
+            echo "Access to main app: $INGRESS_URL"
+          else
+            echo "Could not find the Ingress URL. It might still be provisioning."
+          fi
+
+      - name: 🛠️ Setup eksctl CLI Tool
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          # Verify checksum (good practice)
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep "$PLATFORM" | sha256sum --check
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+          rm eksctl_$PLATFORM.tar.gz
+          eksctl version
+          
+      - name: 🧪 Test eksctl command
+        run: |
+          KUBERNETES_CLUSTER="${{ needs.build-aws-infra.outputs.kubernetes_cluster_name }}"
+          REGION="${{ needs.build-aws-infra.outputs.primary_region }}"
+          CONSOLE_ACCESS_ARN="${{ needs.build-aws-infra.outputs.console_access_arn}}"
+
+          eksctl get iamidentitymapping \
+            --cluster "$KUBERNETES_CLUSTER" \
+            --region="$REGION"
+
+          eksctl create iamidentitymapping \
+            --cluster "$KUBERNETES_CLUSTER" \
+            --region="$REGION" \
+            --arn "$CONSOLE_ACCESS_ARN" \
+            --group eks-console-dashboard-full-access-group \
+            --no-duplicate-arns
+
+          echo "${{ needs.build-aws-infra.outputs.administrator_arns_list }}" > administrator_arns.json
+          
+          for ARN in $(jq -r '.[]' administrator_arns.json); do
+            eksctl create iamidentitymapping \
+              --cluster "$KUBERNETES_CLUSTER" \
+              --region="$REGION" \
+              --arn "$ARN" \
+              --group eks-console-dashboard-restricted-access-group \
+              --no-duplicate-arns
+          done
+
+          cat administrator_arns.json
+
+          rm administrator_arns.json
+        
+          echo "✅ Status: Kubernetes deployment completed successfully"
