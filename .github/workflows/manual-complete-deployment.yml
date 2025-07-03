@@ -1,13 +1,6 @@
-name: 🚀 Manual Complete Deployment
+name: 🚀 Complete Deployment
 
 on:
-  # push:
-  #   branches: [main]
-  #   paths: 
-  #     - 'src/app/main/**'
-  #     - 'src/app/consumer/**'
-  #     - 'src/kubernetes/**'
-  #     - 'src/aws/**'
   workflow_dispatch:
 
 env:
