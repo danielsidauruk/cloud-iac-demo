@@ -315,10 +315,10 @@ jobs:
             --arn "$CONSOLE_ACCESS_ARN" \
             --group eks-console-dashboard-full-access-group \
             --no-duplicate-arns
-
-          echo "${{ needs.build-aws-infra.outputs.administrator_arns_list }}" > administrator_arns.json
           
-          for ARN in $(jq -r '.[]' administrator_arns.json); do
+          ADMIN_ARNS_ARRAY=$(jq -r '.[]' <<< "${{ needs.build-aws-infra.outputs.administrator_arns_list }}")
+
+          for ARN in $ADMIN_ARNS_ARRAY; do
             eksctl create iamidentitymapping \
               --cluster "$KUBERNETES_CLUSTER" \
               --region="$REGION" \
@@ -326,9 +326,5 @@ jobs:
               --group eks-console-dashboard-restricted-access-group \
               --no-duplicate-arns
           done
-
-          cat administrator_arns.json
-
-          rm administrator_arns.json
         
           echo "✅ Status: Kubernetes deployment completed successfully"
