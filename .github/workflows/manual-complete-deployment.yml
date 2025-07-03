@@ -110,8 +110,6 @@ jobs:
           terraform output -json administrator_arns_list >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-          ecr_repositories_arn = 
-
           echo "✅ Status: Infrastructure deployment completed successfully"
 
   build-main-app:
