@@ -29,26 +29,24 @@ jobs:
       run:
         working-directory: ./src/aws
     outputs:
-      application_name: ${{ steps.outputs.outputs.application_name }}
-      environment_name: ${{ steps.outputs.outputs.environment_name }}
-      primary_region: ${{ steps.outputs.outputs.primary_region }}
-      kubernetes_cluster_name: ${{ steps.outputs.outputs.kubernetes_cluster_name }}
-      kubernetes_namespace: ${{ steps.outputs.outputs.kubernetes_namespace }}
-      kubernetes_service_account_name: ${{ steps.outputs.outputs.kubernetes_service_account_name }}
-      alb_controller_role: ${{ steps.outputs.outputs.alb_controller_role }}
-      administrator_arns_list: ${{ steps.outputs.outputs.administrator_arns_list }}
-      console_access_arn: ${{ steps.outputs.outputs.console_access_arn }}
-      workload_identity_role: ${{ steps.outputs.outputs.workload_identity_role }}
-      bucket_name: ${{ steps.outputs.outputs.bucket_name }}
-      username: ${{ steps.outputs.outputs.username }}
-      postgres_dbname: ${{ steps.outputs.outputs.postgres_dbname }}
-      postgres_host_endpoint: ${{ steps.outputs.outputs.postgres_host_endpoint }}
-      postgresql_secret: ${{ steps.outputs.outputs.postgresql_secret }}
-      rabbitmq_secret: ${{ steps.outputs.outputs.rabbitmq_secret }}
-      rabbitmq_host_endpoint: ${{ steps.outputs.outputs.rabbitmq_host_endpoint }}
-      redis_host_endpoint: ${{ steps.outputs.outputs.redis_host_endpoint }}
-      main_image: ${{ steps.get_images.outputs.main_image }}
-      consumer_image: ${{ steps.get_images.outputs.consumer_image }}
+      application_name: ${{ steps.aws-outputs.outputs.application_name }}
+      environment_name: ${{ steps.aws-outputs.outputs.environment_name }}
+      primary_region: ${{ steps.aws-outputs.outputs.primary_region }}
+      kubernetes_cluster_name: ${{ steps.aws-outputs.outputs.kubernetes_cluster_name }}
+      kubernetes_namespace: ${{ steps.aws-outputs.outputs.kubernetes_namespace }}
+      kubernetes_service_account_name: ${{ steps.aws-outputs.outputs.kubernetes_service_account_name }}
+      alb_controller_role: ${{ steps.aws-outputs.outputs.alb_controller_role }}
+      administrator_arns_list: ${{ steps.aws-outputs.outputs.administrator_arns_list }}
+      console_access_arn: ${{ steps.aws-outputs.outputs.console_access_arn }}
+      workload_identity_role: ${{ steps.aws-outputs.outputs.workload_identity_role }}
+      bucket_name: ${{ steps.aws-outputs.outputs.bucket_name }}
+      username: ${{ steps.aws-outputs.outputs.username }}
+      postgres_dbname: ${{ steps.aws-outputs.outputs.postgres_dbname }}
+      postgres_host_endpoint: ${{ steps.aws-outputs.outputs.postgres_host_endpoint }}
+      postgresql_secret: ${{ steps.aws-outputs.outputs.postgresql_secret }}
+      rabbitmq_secret: ${{ steps.aws-outputs.outputs.rabbitmq_secret }}
+      rabbitmq_host_endpoint: ${{ steps.aws-outputs.outputs.rabbitmq_host_endpoint }}
+      redis_host_endpoint: ${{ steps.aws-outputs.outputs.redis_host_endpoint }}
     
     steps:
       - name: 📥 Checkout Repository
@@ -84,6 +82,7 @@ jobs:
           terraform show -no-color tfplan
 
       - name: 🚀 Deploy Infrastructure to AWS
+        id: aws-outputs
         run: |
           terraform apply -auto-approve -target=module.vpc.random_shuffle.az
           terraform apply -auto-approve
