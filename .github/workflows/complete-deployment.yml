@@ -98,9 +98,9 @@ jobs:
           echo "rabbitmq_secret=$(terraform output -raw rabbitmq_secret)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
           
-          echo "administrator_arns_list<<EOF" >> "$GITHUB_OUTPUT"
+          # echo "administrator_arns_list<<EOF" >> "$GITHUB_OUTPUT"
           terraform output -json administrator_arns_list >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          # echo "EOF" >> "$GITHUB_OUTPUT"
 
           echo "✅ Status: Infrastructure deployment completed successfully"
 
@@ -249,9 +249,6 @@ jobs:
           TF_VAR_rabbitmq_secret: ${{ needs.build-aws-infra.outputs.rabbitmq_secret }}
           TF_VAR_main_image: ${{ needs.build-main-app.outputs.main_image }}
           TF_VAR_consumer_image: ${{ needs.build-consumer-app.outputs.consumer_image }}
-
-          REGION: ${{ needs.build-aws-infra.outputs.primary_region }}
-          KUBERNETES_CLUSTER: ${{ needs.build-aws-infra.outputs.kubernetes_cluster_name }}
 
         run: |
           terraform fmt -check
