@@ -98,9 +98,9 @@ jobs:
           echo "rabbitmq_secret=$(terraform output -raw rabbitmq_secret)" >> "$GITHUB_OUTPUT"
           echo "redis_host_endpoint=$(terraform output -raw redis_host_endpoint)" >> "$GITHUB_OUTPUT"
           
-          # echo "administrator_arns_list<<EOF" >> "$GITHUB_OUTPUT"
+          echo "administrator_arns_list<<EOF" >> "$GITHUB_OUTPUT"
           terraform output -json administrator_arns_list >> "$GITHUB_OUTPUT"
-          # echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
           echo "✅ Status: Infrastructure deployment completed successfully"
 

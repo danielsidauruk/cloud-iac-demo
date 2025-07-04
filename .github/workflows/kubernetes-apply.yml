@@ -6,7 +6,7 @@ on:
     paths: ['src/kubernetes/**']
   workflow_dispatch:
   repository_dispatch:
-    types: [app-main-event, app-consumer-event, combined-app-build-event]
+    types: [app-main-event, app-consumer-event]
 concurrency:
   group: kubernetes-deployment-dev-env
   cancel-in-progress: false
