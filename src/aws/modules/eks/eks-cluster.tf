@@ -23,8 +23,7 @@ resource "aws_eks_cluster" "main" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy,
     aws_iam_role_policy_attachment.eks_vpc_controller_policy,
-    aws_cloudwatch_log_group.container_cluster,
-    # aws_ecr_repository.main
+    aws_cloudwatch_log_group.container_cluster
   ]
 
   tags = {
