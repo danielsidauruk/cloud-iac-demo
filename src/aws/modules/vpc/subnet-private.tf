@@ -53,6 +53,10 @@ resource "aws_route_table" "private" {
     nat_gateway_id = aws_nat_gateway.nat[each.key].id
   }
 
+  tags = {
+    Name = "${var.application_name}-${var.environment_name}-private-rt"
+  }
+
 }
 
 resource "aws_route_table_association" "private" {

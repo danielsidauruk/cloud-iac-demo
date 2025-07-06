@@ -23,13 +23,8 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  depends_on = [
-    aws_vpc.main,
-    aws_internet_gateway.main
-  ]
-
   tags = {
-    Name = "${var.application_name}-${var.environment_name}-public-subnet"
+    Name = "${var.application_name}-${var.environment_name}-public-rt"
   }
 }
 
