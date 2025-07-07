@@ -125,6 +125,4 @@ module "s3" {
   primary_region   = var.primary_region
   bucket_name      = var.bucket_name
 
-  private_route_table_ids = module.vpc.private_route_table_ids
-  vpc_id                  = module.vpc.vpc_id
 }
