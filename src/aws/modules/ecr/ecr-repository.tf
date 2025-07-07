@@ -13,3 +13,24 @@ resource "aws_ecr_repository" "main" {
   }
 
 }
+
+resource "aws_ecr_lifecycle_policy" "main" {
+  for_each   = toset(var.repository_list)
+  repository = aws_ecr_repository.main[each.value].name
+
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1,
+      description  = "Expire untagged images older than 30 days"
+      selection = {
+        tagStatus   = "untagged"
+        countType   = "sinceImagePushed"
+        countUnit   = "days"
+        countNumber = 30
+      }
+      action = {
+        type = "expire"
+      }
+    }]
+  })
+}
