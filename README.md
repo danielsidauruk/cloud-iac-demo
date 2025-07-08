@@ -5,6 +5,8 @@
 [![App Main Build](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-main-build.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-main-build.yml)
 [![App Consumer Build](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-consumer-build.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-consumer-build.yml)
 [![Kubernetes Apply](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-apply.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-apply.yml)
+[![AWS Infrastructure Destroy](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml)
+[![Kubernetes Delete](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml)
 
 This project demonstrates a complete CI/CD pipeline for a cloud-native application. It leverages GitHub Actions, Terraform, and Kubernetes to automate the entire process from code commit to deployment on AWS.
 
