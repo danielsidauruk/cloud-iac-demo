@@ -1,10 +1,10 @@
 resource "aws_security_group" "vpc_endpoint" {
   name        = "${var.application_name}-${var.environment_name}-vpc-endpoint"
-  description = "Allow access to VPC Endpoint"
+  description = "Allow Access to VPC Endpoint"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name        = "${var.application_name}-${var.environment_name}-vpc-endpoint-sg"
+    Name        = "Security Group for VPC Endpoint ( ${var.application_name} | ${var.environment_name} )"
     application = var.application_name
     environment = var.environment_name
   }
