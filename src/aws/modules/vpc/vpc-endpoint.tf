@@ -35,49 +35,59 @@ resource "aws_vpc_endpoint" "secretsmanager" {
   }
 }
 
-# resource "aws_vpc_endpoint" "cloudwatch" {
-#   vpc_id              = aws_vpc.main.id
-#   service_name        = "com.amazonaws.${var.primary_region}.logs"
-#   vpc_endpoint_type   = "Interface"
-#   private_dns_enabled = true
+resource "aws_vpc_endpoint" "cloudwatch" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.primary_region}.logs"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
 
-#   subnet_ids = local.private_subnet_ids
+  security_group_ids = [
+    aws_security_group.vpc_endpoint.id
+  ]
 
-#   tags = {
-#     Name        = "${var.application_name}-${var.environment_name}-cloudwatch-endpoint"
-#     application = var.application_name
-#     environment = var.environment_name
-#   }
-# }
+  subnet_ids = local.private_subnet_ids
 
-// i might delete this code
+  tags = {
+    Name        = "${var.application_name}-${var.environment_name}-cloudwatch-endpoint"
+    application = var.application_name
+    environment = var.environment_name
+  }
+}
 
-# resource "aws_vpc_endpoint" "ecr_api" {
-#   vpc_id              = aws_vpc.main.id
-#   service_name        = "com.amazonaws.${var.primary_region}.ecr.api"
-#   vpc_endpoint_type   = "Interface"
-#   private_dns_enabled = true
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.primary_region}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
 
-#   subnet_ids = local.private_subnet_ids
+  security_group_ids = [
+    aws_security_group.vpc_endpoint.id
+  ]
 
-#   tags = {
-#     Name        = "${var.application_name}-${var.environment_name}-ecr-api-endpoint"
-#     application = var.application_name
-#     environment = var.environment_name
-#   }
-# }
+  subnet_ids = local.private_subnet_ids
 
-# resource "aws_vpc_endpoint" "ecr_dkr" {
-#   vpc_id              = aws_vpc.main.id
-#   service_name        = "com.amazonaws.${var.primary_region}.ecr.dkr"
-#   vpc_endpoint_type   = "Interface"
-#   private_dns_enabled = true
+  tags = {
+    Name        = "${var.application_name}-${var.environment_name}-ecr-api-endpoint"
+    application = var.application_name
+    environment = var.environment_name
+  }
+}
 
-#   subnet_ids = local.private_subnet_ids
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.primary_region}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
 
-#   tags = {
-#     Name        = "${var.application_name}-${var.environment_name}-ecr-dkr-endpoint"
-#     application = var.application_name
-#     environment = var.environment_name
-#   }
-# }
+  security_group_ids = [
+    aws_security_group.vpc_endpoint.id
+  ]
+
+  subnet_ids = local.private_subnet_ids
+
+  tags = {
+    Name        = "${var.application_name}-${var.environment_name}-ecr-dkr-endpoint"
+    application = var.application_name
+    environment = var.environment_name
+  }
+}

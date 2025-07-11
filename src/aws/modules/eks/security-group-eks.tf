@@ -8,7 +8,7 @@ resource "aws_security_group" "cluster" {
     to_port   = 0
 
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.vpc_cidr_block]
   }
 
 }
@@ -17,7 +17,7 @@ resource "aws_security_group_rule" "cluster_ingress_https" {
 
   security_group_id = aws_security_group.cluster.id
   type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = [var.vpc_cidr_block]
   from_port         = 443
   to_port           = 443
   description       = "Cluster Ingress HTTPs"
@@ -29,7 +29,7 @@ resource "aws_security_group_rule" "nodeport_cluster_tcp" {
 
   security_group_id = aws_security_group.cluster.id
   type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = [var.vpc_cidr_block]
   from_port         = 30000
   to_port           = 32768
   description       = "Nodeport Cluster Ingress tcp"
@@ -41,7 +41,7 @@ resource "aws_security_group_rule" "nodeport_cluster_udp" {
 
   security_group_id = aws_security_group.cluster.id
   type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = [var.vpc_cidr_block]
   from_port         = 30000
   to_port           = 32768
   description       = "Nodeport Cluster udp"
@@ -59,7 +59,7 @@ resource "aws_security_group" "cluster_nodes" {
     to_port   = 0
 
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.vpc_cidr_block]
   }
 }
 
@@ -67,7 +67,7 @@ resource "aws_security_group_rule" "nodeport_tcp" {
 
   security_group_id = aws_security_group.cluster_nodes.id
   type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = [var.vpc_cidr_block]
   from_port         = 30000
   to_port           = 32768
   description       = "Nodeport tcp"

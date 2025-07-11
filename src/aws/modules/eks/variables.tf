@@ -31,6 +31,11 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
+variable "vpc_cidr_block" {
+  type        = string
+  description = "VPC CIDR block."
+}
+
 
 # EKS/Kubernetes Variables
 variable "node_image_type" {

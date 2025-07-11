@@ -58,6 +58,7 @@ module "eks" {
   node_size                       = var.node_size
   kubernetes_service_account_name = var.kubernetes_service_account_name
   primary_region                  = var.primary_region
+  vpc_cidr_block                  = var.vpc_cidr_block
 
   aws_account_id = data.aws_caller_identity.current.account_id
 
