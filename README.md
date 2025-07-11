@@ -18,6 +18,9 @@ This project demonstrates a complete CI/CD pipeline for a cloud-native applicati
   - [GitHub Workflow](#github-workflow)
   - [AWS Infrastructure](#aws-infrastructure)
   - [Kubernetes Architecture](#kubernetes-architecture)
+  - [Applications](#applications)
+    - [Main App](#main-app)
+    - [Consumer App](#consumer-app)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Configuration](#configuration)
@@ -28,11 +31,11 @@ This project demonstrates a complete CI/CD pipeline for a cloud-native applicati
 
 ## Project Overview
 
-This repository contains the source code and infrastructure-as-code for a sample two-tier application. The goal is to provide a working example of how to build, test, and deploy a containerized application to a managed Kubernetes service in the cloud.
+This project showcases a robust and automated approach to managing cloud infrastructure and application deployment using Infrastructure as Code (IaC). The entire infrastructure is defined and provisioned using Terraform, ensuring a consistent, repeatable, and version-controlled environment. This repository provides a practical demonstration of how to build, test, and deploy a containerized, two-tier application to a managed Kubernetes service on AWS, all orchestrated through a seamless CI/CD pipeline.
 
 The application consists of two services:
-*   **Main App:** A public-facing web application that serves as the primary user interface.
-*   **Consumer App:** A background worker that processes messages from a queue.
+*   **Main App:** A public-facing web application that serves as the primary user interface. It enables users to interact with various AWS services, including RDS, ElastiCache, S3, and ActiveMQ.
+*   **Consumer App:** A background worker that processes messages from a RabbitMQ queue.
 
 The key technologies used are:
 *   **CI/CD:** GitHub Actions
@@ -55,14 +58,12 @@ The key technologies used are:
 │   ├── kubernetes-apply.yml
 │   └── kubernetes-delete.yml
 ├── diagram/                   # Architecture diagrams
-│   ├── aws-diagram.png
-│   └── kubernetes-diagram.svg
 ├── src/
 │   ├── app/                   # Application source code
-│   │   ├── consumer/          # Consumer service (background worker)
+│   │   ├── consumer/          # Consumer service (consumer)
 │   │   └── main/              # Main service (web app)
 │   ├── aws/                   # Terraform code for AWS infrastructure
-│   │   └── modules/           # Terraform modules for reusable components
+│   │   └── modules/           # Terraform modules for components segregation
 │   └── kubernetes/            # Terraform code for Kubernetes resources
 ├── .gitignore
 ├── LICENSE
@@ -103,13 +104,60 @@ flowchart TD
 
 The AWS infrastructure is provisioned using Terraform. It creates a VPC with public and private subnets, an EKS cluster, and other necessary resources like ECR repositories, S3 buckets, and IAM roles.
 
-<img src="diagram/aws-diagram.png" alt="AWS Infrastructure Diagram"/>
+<p align="center">
+  <img src="diagram/aws-diagram.png" alt="AWS Infrastructure Diagram"/>
+</p>
 
 ### Kubernetes Architecture
 
 The application is deployed to an EKS cluster. The diagram below shows the Kubernetes resources, including deployments, services, and ingress.
 
-<img src="diagram/kubernetes-diagram.png" alt="Kubernetes Architecture Diagram"/>
+<p align="center">
+  <img src="diagram/kubernetes-diagram.svg" alt="Kubernetes Architecture Diagram"/>
+</p>
+
+### Applications
+
+#### Main App
+
+The Main App is a Node.js application using the Express framework. It provides a simple web interface to test the integration with other AWS services.
+
+<p align="center">
+  <img src="diagram/app-main-web.png" alt="App Main Web"/>
+</p>
+
+Features:
+*   **Test RDS Connection:** Verifies the connection to the PostgreSQL database.
+*   **Test ElastiCache Connection:** Verifies the connection to the Redis cluster.
+*   **Publish RabbitMQ Message:** Publishes a message to a RabbitMQ exchange.
+*   **Upload File to S3:** Uploads a file to an S3 bucket.
+*   **List S3 Objects:** Lists the objects in an S3 bucket.
+
+#### Consumer App
+
+The Consumer App is a Node.js application that connects to a RabbitMQ queue, and consumes messages.
+
+
+Example pod consuming the RabbitMQ channel:
+
+```bash
+kubernetes git(main): kubectl logs -f <app-consumer-pod-name> -n app
+🔗 Attempting to connect to RabbitMQ at: rabbiqmq-endpoint-host.mq.ap-southeast-1.on.aws:5671
+✅ Connected to RabbitMQ!
+🛠️ Channel created.
+💬 Exchange 'my_integration_exchange' asserted.
+📦 Using queue 'my_terminal_consumer_queue'.
+🤝 Queue 'my_terminal_consumer_queue' bound to exchange 'my_integration_exchange' with routing key 'integration.test'.
+⏳ Waiting for messages in queue 'my_terminal_consumer_queue'. To stop, terminate the process (e.g., Ctrl+C).
+
+✨ RECEIVED MESSAGE:
+  • Content: "Test to publish Mesage MQ."
+  • Timestamp: 2025-07-10T17:57:23.343Z
+
+✨ RECEIVED MESSAGE:
+  • Content: "Test to publish Mesage MQ. 02"
+  • Timestamp: 2025-07-10T17:57:32.162Z
+```
 
 ## Getting Started
 
@@ -139,13 +187,13 @@ You will also need:
 2.  **Configure AWS Credentials:**
     Ensure your AWS credentials are configured correctly on the machine where you will be running Terraform, or set them up as secrets in your GitHub repository for the Actions to use.
 
-3.  **Create `terraform.tfvars`:**
-    In the `src/aws` directory, create a file named `terraform.tfvars` and provide values for the variables defined in `variables.tf`. This file contains sensitive information and should not be committed to version control.
+3.  **Create or edit `terraform.tfvars`:**
+    In the `src/aws` directory, create or adjust the file named `terraform.tfvars` and provide values for the variables defined in `variables.tf`.
 
     **Example `terraform.tfvars`:**
     ```hcl
     aws_region = "us-east-1"
-    project_name = "cloud-iac-demo"
+    project_name = "app"
     # ... other variables
     ```
 
@@ -174,7 +222,7 @@ To avoid incurring ongoing costs, you can destroy the provisioned infrastructure
 
 1.  **Manual Workflow Trigger:**
     Navigate to the "Actions" tab in your GitHub repository.
-2.  Select the "AWS Infrastructure Destroy" workflow.
+2.  Select the "AWS Infrastructure Destroy" & "Kubernetes Delete" workflow.
 3.  Run the workflow manually. This will trigger a `terraform destroy` command to remove all resources created by Terraform.
 
 ## Contributing
