@@ -8,34 +8,16 @@
 [![AWS Infrastructure Destroy](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml)
 [![Kubernetes Delete](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml)
 
-This project demonstrates a complete CI/CD pipeline for a cloud-native application. It leverages GitHub Actions, Terraform, and Kubernetes to automate the entire process from code commit to deployment on AWS.
-
-## Table of Contents
-
-- [Project Overview](#project-overview)
-- [Project Structure](#project-structure)
-- [Architecture](#architecture)
-  - [GitHub Workflow](#github-workflow)
-  - [AWS Infrastructure](#aws-infrastructure)
-  - [Kubernetes Architecture](#kubernetes-architecture)
-  - [Applications](#applications)
-    - [Main App](#main-app)
-    - [Consumer App](#consumer-app)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Teardown](#teardown)
-- [Contributing](#contributing)
-- [License](#license)
+This project demonstrates a complete CI/CD pipeline for a cloud-native application, using GitHub Actions, Terraform, and Kubernetes to automate deployment on AWS.
 
 ## Project Overview
 
-This project showcases a robust and automated approach to managing cloud infrastructure and application deployment using Infrastructure as Code (IaC). The entire infrastructure is defined and provisioned using Terraform, ensuring a consistent, repeatable, and version-controlled environment. This repository provides a practical demonstration of how to build, test, and deploy a containerized, two-tier application to a managed Kubernetes service on AWS, all orchestrated through a seamless CI/CD pipeline.
+This project showcases an automated approach to managing cloud infrastructure and application deployment using Infrastructure as Code (IaC). The infrastructure is provisioned with Terraform, providing a consistent and version-controlled environment.
 
 The application consists of two services:
-*   **Main App:** A public-facing web application that serves as the primary user interface. It enables users to interact with various AWS services, including RDS, ElastiCache, S3, and ActiveMQ.
-*   **Consumer App:** A background worker that processes messages from a RabbitMQ queue.
+
+Main App: A public-facing web application for user interaction.
+Consumer App: A background worker consuming messages from a RabbitMQ queue.
 
 The key technologies used are:
 *   **CI/CD:** GitHub Actions
@@ -48,29 +30,30 @@ The key technologies used are:
 
 ```
 .
-├── .github/workflows/         # GitHub Actions workflows
-│   ├── app-consumer-build.yml
-│   ├── app-main-build.yml
-│   ├── aws-infra-apply.yml
-│   ├── aws-infra-destroy.yml
-│   ├── aws-infra-plan.yml
-│   ├── complete-deployment.yml
-│   ├── kubernetes-apply.yml
-│   └── kubernetes-delete.yml
-├── diagram/                   # Architecture diagrams
+├── .github/workflows/   # GitHub Actions workflows
+├── diagram/             # Architecture diagrams
 ├── src/
-│   ├── app/                   # Application source code
-│   │   ├── consumer/          # Consumer service (consumer)
-│   │   └── main/              # Main service (web app)
-│   ├── aws/                   # Terraform code for AWS infrastructure
-│   │   └── modules/           # Terraform modules for components segregation
-│   └── kubernetes/            # Terraform code for Kubernetes resources
+│   ├── app/             # Application source code
+│   ├── aws/             # Terraform code for AWS infrastructure
+│   └── kubernetes/      # Terraform code for Kubernetes resources
 ├── .gitignore
 ├── LICENSE
 └── README.md
 ```
 
 ## Architecture
+
+### High-Level Workflow
+
+The diagram below illustrates the end-to-end workflow, from development to deployment.
+
+<p align="center">
+  <img src="diagram/high-level-diagram.svg" alt="High-Level Workflow Diagram"/>
+</p>
+
+**Roles and Responsibilities:**
+*   **Developer (Application):** Writes and maintains the application source code in `src/app`.
+*   **Operations (Infrastructure):** Manages AWS infrastructure (`src/aws`), Kubernetes configurations (`src/kubernetes`), and CI/CD Pipeline of Github Workflows (`.github/workflows`)
 
 ### GitHub Workflow
 
@@ -102,7 +85,7 @@ flowchart TD
 
 ### AWS Infrastructure
 
-The AWS infrastructure is provisioned using Terraform. It creates a VPC with public and private subnets, an EKS cluster, and other necessary resources like ECR repositories, S3 buckets, and IAM roles.
+The infrastructure is provisioned using Terraform, including a VPC, EKS cluster, and other resources.
 
 <p align="center">
   <img src="diagram/aws-diagram.png" alt="AWS Infrastructure Diagram"/>
@@ -197,8 +180,47 @@ You will also need:
     # ... other variables
     ```
 
-4.  **Update GitHub Actions:**
+4.  **Update GitHub Actions & Preparing the Development Environment**
     Update the workflow files in `.github/workflows` to reference your GitHub repository and any specific settings you need. You will need to replace `danielsidauruk` in the badge URLs at the top of this README with your GitHub username.
+
+    This project uses GitHub Environments to manage and secure deployments to the `dev` environment. This section outlines the necessary configurations within your GitHub repository's `dev` environment settings to enable automated deployments via GitHub Actions.
+
+    The `dev` environment ensures that deployments are controlled, and sensitive credentials/configurations are securely managed.
+
+    **Accessing the `dev` Environment Settings**
+    1.  Navigate to your GitHub repository.
+    2.  Click on `Settings` > `Environments` > `dev`.
+
+    **1. Deployment Protection Rules**
+    To ensure controlled and safe deployments to the `dev` environment, the following protection rules are configured:
+    * **Required reviewers:** Specify teams or individuals who must approve workflow runs before deployments proceed.
+    * **Wait timer:** An optional delay after approval before a deployment starts.
+    * **Enable custom rules with GitHub Apps:** If you have custom deployment logic or external checks, these can be integrated here.
+    * **Allow administrators to bypass configured protection rules:** Provides an override for repository administrators in emergency situations.
+
+    **2. Environment Secrets**
+    Sensitive data required by your GitHub Actions workflows for the `dev` environment must be stored as **Environment Secrets**. These are encrypted and not exposed in logs.
+
+    | Secret Name           | Description                                                                                                                                      |
+    | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+    | `AWS_ACCESS_KEY_ID`   | Your AWS Access Key ID, used for authenticating GitHub Actions with your AWS account to deploy resources.                                          |
+    | `AWS_SECRET_ACCESS_KEY` | Your AWS Secret Access Key, corresponding to the above Access Key ID.                                                                            |
+    | `GHP_TOKEN`           | A GitHub Personal Access Token (PAT) with appropriate scopes (e.g., `repo`, `workflow`) if your GitHub Actions need to interact with other parts of GitHub. |
+
+    **3. Environment Variables**
+    Non-sensitive configuration parameters specific to the `dev` environment are stored as **Environment Variables**.
+
+    | Variable Name                 | Value                           | Description                                                                                             |
+    | ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+    | `APPLICATION_NAME`            | `app`                           | The name of the application being deployed.                                                             |
+    | `AWS_REGION`                  | `ap-southeast-1`                | The AWS region where resources for `dev` are deployed.                                                  |
+    | `CONSUMER_REPOSITORY`         | `consumer`                      | The name for a consumer service/repository.                                                             |
+    | `ENVIRONMENT_NAME`            | `dev`                           | Explicitly sets the environment name, useful for dynamic paths or naming conventions within Terraform.    |
+    | `MAIN_REPOSITORY`             | `main`                          | Indicating the main branch for source code.                                                             |
+    | `TF_AWS_BACKEND_KEY`          | `dev/eks/terraform.tfstate`     | The key for the Terraform state file within the S3 backend for AWS-related resources in `dev`.          |
+    | `TF_BACKEND_BUCKET`           | `tfstate-app-bucket`            | The S3 bucket name used to store Terraform state files.                                                 |
+    | `TF_BACKEND_REGION`           | `ap-southeast-1`                | The AWS region where the Terraform backend bucket is located.                                           |
+    | `TF_KUBERNETES_BACKEND_KEY`   | `dev/kubernetes/terraform.tfstate` | The key for a separate Terraform state file for Kubernetes-specific resources within the S3 backend for `dev`. |
 
 ## Deployment
 
