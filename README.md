@@ -103,7 +103,7 @@ The application is deployed to an EKS cluster. The diagram below shows the Kuber
 
 #### Main App
 
-The Main App is a Node.js application using the Express framework. It provides a simple web interface to test the integration with other AWS services.
+The Main App is a Node.js application. It provides a simple web interface to test the integration with other AWS services.
 
 <p align="center">
   <img src="diagram/app-main-web.png" alt="App Main Web"/>
