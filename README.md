@@ -1,30 +1,27 @@
 # Cloud IAC Demo
 
 [![AWS Infrastructure Plan](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-plan.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-plan.yml)
-[![AWS Infrastructure Apply](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-apply.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-apply.yml)
+[![AWS Infrastructure Apply](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-apply.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-apply.yml)[![AWS Infrastructure Destroy](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml)
+[![Kubernetes Apply](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-apply.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-apply.yml)
+[![Kubernetes Delete](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml)
 [![App Main Build](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-main-build.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-main-build.yml)
 [![App Consumer Build](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-consumer-build.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/app-consumer-build.yml)
-[![Kubernetes Apply](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-apply.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-apply.yml)
-[![AWS Infrastructure Destroy](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/aws-infra-destroy.yml)
-[![Kubernetes Delete](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml/badge.svg)](https://github.com/danielsidauruk/cloud-iac-demo/actions/workflows/kubernetes-delete.yml)
-
-This project demonstrates a complete CI/CD pipeline for a cloud-native application, using GitHub Actions, Terraform, and Kubernetes to automate deployment on AWS.
 
 ## Project Overview
 
-This project showcases an automated approach to managing cloud infrastructure and application deployment using Infrastructure as Code (IaC). The infrastructure is provisioned with Terraform, providing a consistent and version-controlled environment.
+This project showcases an approach to managing cloud infrastructure and application deployment using Infrastructure as Code (IaC). The infrastructure is provisioned with Terraform, providing a consistent and version-controlled environment.
 
-The application consists of two services:
+The demo application consists of two services:
 
 Main App: A public-facing web application for user interaction.
 Consumer App: A background worker consuming messages from a RabbitMQ queue.
 
 The key technologies used are:
-*   **CI/CD:** GitHub Actions
 *   **Infrastructure as Code:** Terraform
 *   **Cloud Provider:** Amazon Web Services (AWS)
-*   **Containerization:** Docker
 *   **Container Orchestration:** Kubernetes (Amazon EKS)
+*   **Containerization:** Docker
+*   **CI/CD:** GitHub Actions
 
 ## Project Structure
 
