@@ -12,7 +12,6 @@ resource "helm_release" "csi_secrets_store" {
 
 }
 
-
 resource "helm_release" "aws_secrets_provider" {
 
   name       = "secrets-provider-aws"
